@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
+    src/Bluepad32.h
     src/Bluepad32_PicoW.cpp
     src/PicoBluepad32.cpp
     src/PicoBluepad32.h
