@@ -4,6 +4,16 @@
 #ifndef BP32_BLUEPAD32_H
 #define BP32_BLUEPAD32_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "uni_main.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include "PicoBluepad32.h"
 #include "PicoConsole.h"
 #include "PicoController.h"

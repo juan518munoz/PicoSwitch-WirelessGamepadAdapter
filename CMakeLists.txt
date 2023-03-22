@@ -19,7 +19,6 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
-    src/btstack_config.h
     src/Bluepad32_PicoW.cpp
     src/PicoBluepad32.cpp
     src/PicoBluepad32.h
@@ -32,7 +31,6 @@ add_executable(Bluepad32_PicoW
 )
 
 target_include_directories(Bluepad32_PicoW PRIVATE src bluepad32/include)
-target_include_directories(Bluepad32_PicoW PRIVATE src/bt)
 target_link_libraries(Bluepad32_PicoW 
     pico_stdlib
     pico_cyw43_arch_none

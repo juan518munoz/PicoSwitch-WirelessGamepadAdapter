@@ -1,5 +1,6 @@
 set(includes
 ./sdkconfig.h
+./include/btstack_config.h
 ./include/uni_hid_device.h
 ./include/uni_circular_buffer.h
 ./include/uni_console.h
@@ -113,11 +114,12 @@ add_library(bluepad32
 ${srcs}
 )
 
-target_include_directories(bluepad32 PUBLIC ./include ../src/bt)
+target_include_directories(bluepad32 PUBLIC ./include)
+
 target_link_libraries(bluepad32
-pico_stdlib
-pico_cyw43_arch_none
-pico_btstack_ble
-pico_btstack_classic
-pico_btstack_cyw43
+    pico_stdlib
+    pico_cyw43_arch_none
+    pico_btstack_ble
+    pico_btstack_classic
+    pico_btstack_cyw43
 )
