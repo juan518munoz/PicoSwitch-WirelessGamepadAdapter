@@ -86,31 +86,8 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     GamepadPtr myGamepad = myGamepads[0];
     if (myGamepad && myGamepad->isConnected())
     {
-        try
-        {
-            tusb_handler_tud_task();
-            if (tusb_handler_tud_suspended())
-            {
-                tusb_handler_tud_remote_wakeup();
-            }
-            if (tusb_handler_tud_hid_ready())
-            {
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, myGamepad->y() ? 1 : 0);
 
-                // _switchReport.buttons |= SWITCH_MASK_L;
-                // _switchReport.buttons |= SWITCH_MASK_R;
-
-                tusb_handler_tud_hid_report(&_switchReport, sizeof(SwitchReport));
-            }
-        }
-        catch (int e)
-        {
-            tusb_handler_tud_task();
-            if (tusb_handler_tud_suspended())
-            {
-                tusb_handler_tud_remote_wakeup();
-            }
-        }
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, myGamepad->y() ? 1 : 0);
     }
 
     // set timer for next tick
@@ -157,20 +134,9 @@ void sendData(uint8_t *request, uint8_t dataLength, uint8_t *response, uint8_t r
     }
 }
 
-void init_pio()
-{
-    // Init Params
-    uint8_t pin = 18;
-    PIO pio;
-    uint sm;
-    pio_sm_config *c;
-    uint offset;
-}
-
 int main()
 {
     stdio_init_all();
-    init_pio();
     tusb_handler_init();
 
     // initialize CYW43 driver architecture (will enable BT if/because CYW43_ENABLE_BLUETOOTH == 1)
