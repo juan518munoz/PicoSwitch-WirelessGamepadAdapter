@@ -14,13 +14,14 @@ include(pico_sdk_import.cmake)
 project(Bluepad32_PicoW C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
+    src/main.cpp
     src/Bluepad32.h
-    src/Bluepad32_PicoW.cpp
     src/PicoBluepad32.cpp
     src/PicoBluepad32.h
     src/PicoConsole.cpp
@@ -29,6 +30,12 @@ add_executable(Bluepad32_PicoW
     src/PicoController.h
     src/PicoGamepad.cpp
     src/PicoGamepad.h
+    src/BluepadController.h
+    src/SwitchDescriptors.h
+    src/SwitchDescriptors.cpp
+    src/tusb_config.h
+    src/tusb_handler.h
+    src/tusb_handler.cpp
 )
 
 target_include_directories(Bluepad32_PicoW PRIVATE src bluepad32/include)
@@ -38,9 +45,12 @@ target_link_libraries(Bluepad32_PicoW
     pico_btstack_classic
     pico_btstack_cyw43
     bluepad32
+    tinyusb_device
 )
 
 add_subdirectory(bluepad32)
+
+pico_generate_pio_header(Bluepad32_PicoW ${CMAKE_CURRENT_LIST_DIR}/src/Controller.pio)
 
 pico_enable_stdio_usb(Bluepad32_PicoW 1)
 pico_enable_stdio_uart(Bluepad32_PicoW 0)
