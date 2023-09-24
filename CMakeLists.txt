@@ -21,24 +21,15 @@ pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
     src/main.cpp
-    src/Bluepad32.h
     src/PicoBluepad32.cpp
-    src/PicoBluepad32.h
     src/PicoConsole.cpp
-    src/PicoConsole.h
     src/PicoController.cpp
-    src/PicoController.h
     src/PicoGamepad.cpp
-    src/PicoGamepad.h
-    src/BluepadController.h
-    src/SwitchDescriptors.h
     src/SwitchDescriptors.cpp
-    src/tusb_config.h
-    src/tusb_handler.h
     src/tusb_handler.cpp
 )
 
-target_include_directories(Bluepad32_PicoW PRIVATE src bluepad32/include)
+target_include_directories(Bluepad32_PicoW PRIVATE src include bluepad32/include)
 target_link_libraries(Bluepad32_PicoW 
     pico_stdlib
     pico_cyw43_arch_none
