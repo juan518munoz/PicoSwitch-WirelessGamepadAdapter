@@ -21,11 +21,12 @@ pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
     src/main.cpp
-    src/PicoBluepad32.cpp
-    src/PicoConsole.cpp
-    src/PicoController.cpp
-    src/PicoGamepad.cpp
-    src/SwitchDescriptors.cpp
+    src/picoHandler/PicoBluepad32.cpp
+    src/picoHandler/PicoConsole.cpp
+    src/picoHandler/PicoController.cpp
+    src/picoHandler/PicoGamepad.cpp
+    src/switchController/SwitchDescriptors.cpp
+    src/otherController/otherController.cpp
     src/tusb_handler.cpp
 )
 
@@ -41,7 +42,7 @@ target_link_libraries(Bluepad32_PicoW
 
 add_subdirectory(bluepad32)
 
-pico_generate_pio_header(Bluepad32_PicoW ${CMAKE_CURRENT_LIST_DIR}/src/Controller.pio)
+pico_generate_pio_header(Bluepad32_PicoW ${CMAKE_CURRENT_LIST_DIR}/src/otherController/Controller.pio)
 
 pico_enable_stdio_usb(Bluepad32_PicoW 1)
 pico_enable_stdio_uart(Bluepad32_PicoW 0)

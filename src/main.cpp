@@ -5,10 +5,9 @@
 #include "Bluepad32.h"
 #include "uni_main.h"
 
-// #include "BluepadController.h"
+#include "OtherController.h"
 #include "SwitchDescriptors.h"
 #include "tusb_handler.h" // needed bc tusb.h has conflicts with btstack.h
-#include "Controller.pio.h"
 
 #include <memory>
 #include <stdio.h>
@@ -17,15 +16,7 @@
 #include "hardware/clocks.h"
 
 static btstack_timer_source_t work_timer;
-SwitchReport _switchReport{
-    .buttons = 0,
-    .hat = SWITCH_HAT_NOTHING,
-    .lx = SWITCH_JOYSTICK_MID,
-    .ly = SWITCH_JOYSTICK_MID,
-    .rx = SWITCH_JOYSTICK_MID,
-    .ry = SWITCH_JOYSTICK_MID,
-    .vendor = 0,
-};
+OtherController *controller;
 
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
 
@@ -137,6 +128,8 @@ void sendData(uint8_t *request, uint8_t dataLength, uint8_t *response, uint8_t r
 int main()
 {
     stdio_init_all();
+    controller = new OtherController(18, 10);
+    // controller->init();
     tusb_handler_init();
 
     // initialize CYW43 driver architecture (will enable BT if/because CYW43_ENABLE_BLUETOOTH == 1)
