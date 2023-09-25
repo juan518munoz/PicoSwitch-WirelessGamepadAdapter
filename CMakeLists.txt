@@ -21,12 +21,11 @@ pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
     src/main.cpp
+    src/usb_descriptors.c
     src/picoHandler/PicoBluepad32.cpp
     src/picoHandler/PicoConsole.cpp
     src/picoHandler/PicoController.cpp
     src/picoHandler/PicoGamepad.cpp
-    src/switchController/SwitchDescriptors.cpp
-    src/otherController/otherController.cpp
     src/tusb_handler.cpp
 )
 
@@ -35,14 +34,14 @@ target_link_libraries(Bluepad32_PicoW
     pico_stdlib
     pico_cyw43_arch_none
     pico_btstack_classic
+    pico_btstack_ble
     pico_btstack_cyw43
     bluepad32
     tinyusb_device
+    tinyusb_board
 )
 
 add_subdirectory(bluepad32)
-
-pico_generate_pio_header(Bluepad32_PicoW ${CMAKE_CURRENT_LIST_DIR}/src/otherController/Controller.pio)
 
 pico_enable_stdio_usb(Bluepad32_PicoW 1)
 pico_enable_stdio_uart(Bluepad32_PicoW 0)

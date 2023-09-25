@@ -5,8 +5,8 @@
 #include "Bluepad32.h"
 #include "uni_main.h"
 
-#include "OtherController.h"
 #include "SwitchDescriptors.h"
+// #include "bsp/board.h"
 #include "tusb_handler.h" // needed bc tusb.h has conflicts with btstack.h
 
 #include <memory>
@@ -16,12 +16,8 @@
 #include "hardware/clocks.h"
 
 static btstack_timer_source_t work_timer;
-OtherController *controller;
 
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
-
-// BluepadController *bluepadController;
-SwitchDescriptors switchController;
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
@@ -77,8 +73,20 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     GamepadPtr myGamepad = myGamepads[0];
     if (myGamepad && myGamepad->isConnected())
     {
+        // tusb_handler_tud_task(); // hangs program
+        // if (!tusb_handler_tud_hid_ready())
+        //     return;
 
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, myGamepad->y() ? 1 : 0);
+
+        SwitchOutReport out_report;
+        out_report.buttons = 0;
+        out_report.hat = SWITCH_HAT_NOTHING;
+        out_report.lx = SWITCH_JOYSTICK_MID;
+        out_report.ly = SWITCH_JOYSTICK_MID;
+        out_report.rx = SWITCH_JOYSTICK_MID;
+        out_report.ry = SWITCH_JOYSTICK_MID;
+        // tusb_handler_tud_hid_report(&out_report, sizeof(out_report));
     }
 
     // set timer for next tick
@@ -86,50 +94,9 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     btstack_run_loop_add_timer(&work_timer);
 }
 
-void updatePioOutputSize(uint8_t autoPullLength, PIO _pio, uint _sm)
-{
-    // Pull mask = 0x3E000000
-    // Push mask = 0x01F00000
-    pio_sm_set_enabled(_pio, _sm, false);
-    _pio->sm[_sm].shiftctrl = (_pio->sm[_sm].shiftctrl & 0xA00FFFFF) | (0x8 << 20) | (((autoPullLength + 5) & 0x1F) << 25);
-    // Restart the state machine to avoid 16 0 bits being auto-pulled
-    _pio->ctrl |= 1 << (4 + _sm);
-    pio_sm_set_enabled(_pio, _sm, true);
-}
-
-void sendData(uint8_t *request, uint8_t dataLength, uint8_t *response, uint8_t responseLength, PIO _pio, uint _sm)
-{
-    uint32_t dataWithResponseLength = ((responseLength - 1) & 0x1F) << 27;
-    for (int i = 0; i < dataLength; i++)
-    {
-        dataWithResponseLength |= *(request + i) << (19 - i * 8);
-    }
-    pio_sm_put_blocking(_pio, _sm, dataWithResponseLength);
-
-    int16_t remainingBytes = responseLength;
-    while (remainingBytes > 0)
-    {
-        absolute_time_t timeout_us = make_timeout_time_us(600);
-        bool timedOut = false;
-        while (pio_sm_is_rx_fifo_empty(_pio, _sm) && !timedOut)
-        {
-            timedOut = time_reached(timeout_us);
-        }
-        if (timedOut)
-        {
-            throw 0;
-        }
-        uint32_t data = pio_sm_get(_pio, _sm);
-        response[responseLength - remainingBytes] = (uint8_t)(data & 0xFF); // & (0xFF << i * 8);
-        remainingBytes--;
-    }
-}
-
 int main()
 {
     stdio_init_all();
-    controller = new OtherController(18, 10);
-    // controller->init();
     tusb_handler_init();
 
     // initialize CYW43 driver architecture (will enable BT if/because CYW43_ENABLE_BLUETOOTH == 1)

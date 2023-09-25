@@ -5,7 +5,14 @@ if(DEFINED ENV{BLUEPAD32_ARDUINO})
             "ArduinoController.cpp"
             "ArduinoGamepad.cpp")
 
-    target_link_libraries(${PROJECT_NAME} pico_stdlib tinyusb_device switchController)
+    target_link_libraries(${PROJECT_NAME}
+        pico_stdlib 
+        tinyusb_device 
+        tinyusb_board
+        pico_btstack_classic
+        pico_btstack_ble
+        pico_btstack_cyw43
+    )
 
 
     set(requires "bluepad32" "arduino")
