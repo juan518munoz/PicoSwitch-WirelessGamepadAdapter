@@ -12,6 +12,7 @@ if(DEFINED ENV{BLUEPAD32_ARDUINO})
         pico_btstack_classic
         pico_btstack_ble
         pico_btstack_cyw43
+        pico_multicore
     )
 
 

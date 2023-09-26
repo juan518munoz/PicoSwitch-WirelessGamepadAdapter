@@ -29,7 +29,8 @@ limitations under the License.
 #include "uni_version.h"
 
 // Main entry point, runs forever
-int uni_main(int argc, const char** argv) {
+int uni_main(int argc, const char **argv)
+{
     logi("Bluepad32 (C) 2016-2023 Ricardo Quesada and contributors.\n");
     logi("Version: v" UNI_VERSION "\n");
 
@@ -45,10 +46,33 @@ int uni_main(int argc, const char** argv) {
 
 #if CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE
     uni_console_init();
-#endif  // CONFIG_BLUEPAD32_CONSOLE_ENABLE
+#endif // CONFIG_BLUEPAD32_CONSOLE_ENABLE
 
     // Does not return.
     btstack_run_loop_execute();
 
     return 0;
+}
+
+void uni_main_core(void)
+{
+    logi("Bluepad32 (C) 2016-2023 Ricardo Quesada and contributors.\n");
+    logi("Version: v" UNI_VERSION "\n");
+
+    // Honoring with BT copyright
+    logi("BTStack: Copyright (C) 2017 BlueKitchen GmbH.\n");
+
+    uni_property_init();
+    uni_platform_init(0, NULL);
+    uni_hid_device_setup();
+
+    // Continue with bluetooth setup.
+    uni_bt_setup();
+
+#if CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE
+    uni_console_init();
+#endif // CONFIG_BLUEPAD32_CONSOLE_ENABLE
+
+    // Does not return.
+    btstack_run_loop_execute();
 }

@@ -21,12 +21,12 @@ pico_sdk_init()
 
 add_executable(Bluepad32_PicoW
     src/main.cpp
+    src/bluepad_main.cpp
     src/usb_descriptors.c
     src/picoHandler/PicoBluepad32.cpp
     src/picoHandler/PicoConsole.cpp
     src/picoHandler/PicoController.cpp
     src/picoHandler/PicoGamepad.cpp
-    src/tusb_handler.cpp
 )
 
 target_include_directories(Bluepad32_PicoW PRIVATE src include bluepad32/include)
@@ -39,12 +39,11 @@ target_link_libraries(Bluepad32_PicoW
     bluepad32
     tinyusb_device
     tinyusb_board
+    pico_multicore
 )
 
 add_subdirectory(bluepad32)
 
 pico_enable_stdio_usb(Bluepad32_PicoW 1)
-pico_enable_stdio_uart(Bluepad32_PicoW 0)
-
-# create map/bin/hex/uf2 file in addition to ELF.
+pico_enable_stdio_uart(Bluepad32_PicoW 1)
 pico_add_extra_outputs(Bluepad32_PicoW)

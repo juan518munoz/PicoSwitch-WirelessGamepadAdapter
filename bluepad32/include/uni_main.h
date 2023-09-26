@@ -19,6 +19,8 @@ limitations under the License.
 #ifndef UNI_MAIN_H
 #define UNI_MAIN_H
 
-int uni_main(int argc, const char** argv);
+int uni_main(int argc, const char **argv);
 
-#endif  // UNI_MAIN_H
+void uni_main_core();
+
+#endif // UNI_MAIN_H
