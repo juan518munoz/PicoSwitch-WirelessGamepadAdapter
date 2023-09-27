@@ -20,7 +20,7 @@ void blink_task(uint8_t times)
     sleep_ms(500);
 }
 
-void send_switch_hid_report(uint16_t buttons)
+void send_switch_hid_report(SwitchOutReport report)
 {
     try
     {
@@ -32,15 +32,15 @@ void send_switch_hid_report(uint16_t buttons)
         }
         if (tud_hid_ready())
         {
-            SwitchOutReport out_report = {
-                .buttons = buttons,
-                .hat = SWITCH_HAT_NOTHING,
-                .lx = SWITCH_JOYSTICK_MID,
-                .ly = SWITCH_JOYSTICK_MID,
-                .rx = SWITCH_JOYSTICK_MID,
-                .ry = SWITCH_JOYSTICK_MID};
+            // SwitchOutReport out_report = {
+            //     .buttons = buttons,
+            //     .hat = SWITCH_HAT_NOTHING,
+            //     .lx = SWITCH_JOYSTICK_MID,
+            //     .ly = SWITCH_JOYSTICK_MID,
+            //     .rx = SWITCH_JOYSTICK_MID,
+            //     .ry = SWITCH_JOYSTICK_MID};
 
-            tud_hid_report(0, &out_report, sizeof(out_report));
+            tud_hid_report(0, &report, sizeof(report));
         }
     }
     catch (int e)
@@ -64,12 +64,13 @@ int main()
     tusb_init();
 
     // int conn = 0;
-    uint16_t buttons;
+    // uint16_t buttons;
+    SwitchOutReport report;
     while (true)
     {
-        get_button_state(&buttons);
+        get_button_state(&report);
 
-        send_switch_hid_report(buttons);
+        send_switch_hid_report(report);
     }
 
     return 0;
