@@ -6,7 +6,7 @@ This project is possible thanks to [Bluepad32](https://github.com/ricardoquesada
 ## Development roadmap
 - [x] Bluetooth connection.
 - [x] Basic button mapping.
-- [ ] Complete button mapping.
+- [x] Complete button mapping.
 - [ ] Support multiple gamepads at once (check TinyUsb compatibility).
 - [ ] Update Bluepad32 to latest version.
 - [ ] Support other platforms.
