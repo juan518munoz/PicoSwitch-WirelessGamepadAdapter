@@ -17,6 +17,8 @@
 #include <memory>
 #include <stdio.h>
 
+#define BTSTACK_WORK_TIMER_MS 5
+
 static btstack_timer_source_t work_timer;
 
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
@@ -204,7 +206,7 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     }
 
     // set timer for next tick
-    btstack_run_loop_set_timer(&work_timer, 30);
+    btstack_run_loop_set_timer(&work_timer, BTSTACK_WORK_TIMER_MS);
     btstack_run_loop_add_timer(&work_timer);
 }
 
@@ -232,27 +234,9 @@ void init_bluepad(void)
 
     // set timer for workload
     btstack_run_loop_set_timer_handler(&work_timer, work_timer_handler);
-    btstack_run_loop_set_timer(&work_timer, 30);
+    btstack_run_loop_set_timer(&work_timer, BTSTACK_WORK_TIMER_MS);
     btstack_run_loop_add_timer(&work_timer);
 
     // uni_main(0, NULL);
     multicore_launch_core1(uni_main_core);
 }
-
-// // Another way to query the buttons, is by calling buttons(), or
-// // miscButtons() which return a bitmask.
-// // Some gamepads also have DPAD, axis and more.
-// printf(
-//     "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, "
-//     "%4d, brake: %4d, throttle: %4d, misc: 0x%02x\n",
-//     i,                       // Gamepad Index
-//     myGamepad->dpad(),       // DPAD
-//     myGamepad->buttons(),    // bitmask of pressed buttons
-//     myGamepad->axisX(),      // (-511 - 512) left X Axis
-//     myGamepad->axisY(),      // (-511 - 512) left Y axis
-//     myGamepad->axisRX(),     // (-511 - 512) right X axis
-//     myGamepad->axisRY(),     // (-511 - 512) right Y axis
-//     myGamepad->brake(),      // (0 - 1023): brake button
-//     myGamepad->throttle(),   // (0 - 1023): throttle (AKA gas) button
-//     myGamepad->miscButtons() // bitmak of pressed "misc" buttons
-// );
