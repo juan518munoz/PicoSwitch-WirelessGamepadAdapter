@@ -15,7 +15,7 @@ This project is possible thanks to [Bluepad32](https://github.com/ricardoquesada
 1. Pending instructions.
 
 ## Building
-1. Run `build.sh` to build the project, better instractions will be added later.
+1. Run `build.sh` to build the project, better instructions will be added later.
 
 ## Acknowledgements
 - [ricardoquesada](https://github.com/ricardoquesada) - maker of [Bluepad32](https://github.com/ricardoquesada/bluepad32)

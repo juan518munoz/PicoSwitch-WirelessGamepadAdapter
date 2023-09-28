@@ -87,29 +87,66 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     if (myGamepad && myGamepad->isConnected())
     {
 
-        report.buttons = myGamepad->buttons();
-        // THIS MAY CAUSE UNMASKING ON MULTIPLE BUTTON PRESSES
-        // ADD FLAGS?
-        // current xbox X needs to be mapped to Y
-        if (report.buttons & SWITCH_MASK_A)
-        {
-            report.buttons &= ~SWITCH_MASK_A;
-            report.buttons |= SWITCH_MASK_Y;
-        }
-        // current xbox B needs to be mapped to A
-        else if (report.buttons & SWITCH_MASK_B)
-        {
-            report.buttons &= ~SWITCH_MASK_B;
-            report.buttons |= SWITCH_MASK_A;
-        }
-        // current xbox A needs to be mapped to B
-        else if (report.buttons & SWITCH_MASK_Y)
-        {
-            report.buttons &= ~SWITCH_MASK_Y;
-            report.buttons |= SWITCH_MASK_B;
-        }
+        // report.buttons = myGamepad->buttons();
+        uint16_t buttons = myGamepad->buttons();
+        uint16_t buttons_aux = buttons; // keep initial state
 
-        // current xbox Y is fine
+        buttons &= ~SWITCH_MASK_A;
+        buttons &= ~SWITCH_MASK_B;
+        buttons &= ~SWITCH_MASK_X;
+        buttons &= ~SWITCH_MASK_Y;
+        buttons &= ~SWITCH_MASK_MINUS;
+        buttons &= ~SWITCH_MASK_PLUS;
+
+        // now apply correct masking
+        if (buttons_aux & SWITCH_MASK_A)
+        {
+            buttons |= SWITCH_MASK_Y;
+        }
+        if (buttons_aux & SWITCH_MASK_B)
+        {
+            buttons |= SWITCH_MASK_A;
+        }
+        if (buttons_aux & SWITCH_MASK_Y)
+        {
+            buttons |= SWITCH_MASK_B;
+        }
+        if (buttons_aux & SWITCH_MASK_X)
+        {
+            buttons |= SWITCH_MASK_X;
+        }
+        if (buttons_aux & SWITCH_MASK_MINUS)
+        {
+            buttons |= SWITCH_MASK_L3;
+        }
+        if (buttons_aux & SWITCH_MASK_PLUS)
+        {
+            buttons |= SWITCH_MASK_R3;
+        }
+        report.buttons = buttons;
+
+        // needs to be normalized
+        report.lx = myGamepad->axisX();
+        report.ly = myGamepad->axisY();
+        report.rx = myGamepad->axisRX();
+        report.ry = myGamepad->axisRY();
+
+        if (myGamepad->brake() > 0)
+        {
+            report.buttons |= SWITCH_MASK_ZL;
+        }
+        if (myGamepad->throttle() > 0)
+        {
+            report.buttons |= SWITCH_MASK_ZR;
+        }
+        if (myGamepad->miscSystem()) // not working
+        {
+            report.buttons |= SWITCH_MASK_MINUS;
+        }
+        if (myGamepad->miscHome())
+        {
+            report.buttons |= SWITCH_MASK_PLUS;
+        }
 
         switch (myGamepad->dpad())
         {
