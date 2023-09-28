@@ -79,6 +79,22 @@ void onDisconnectedGamepad(GamepadPtr gp)
     }
 }
 
+uint8_t convert_to_switch_axis(int32_t bluepadAxis)
+{
+    // bluepad32 reports from -512 to 511 as int32_t
+    // switch reports from 0 to 255 as uint8_t
+
+    bluepadAxis += 513; // now max possible is 1024
+    bluepadAxis /= 4;   // now max possible is 255
+
+    if (bluepadAxis < SWITCH_JOYSTICK_MIN)
+        bluepadAxis = 0;
+    else if (bluepadAxis > SWITCH_JOYSTICK_MAX)
+        bluepadAxis = SWITCH_JOYSTICK_MAX;
+
+    return (uint8_t)bluepadAxis;
+}
+
 static void work_timer_handler(btstack_timer_source_t *ts)
 {
     BP32.update();
@@ -125,11 +141,10 @@ static void work_timer_handler(btstack_timer_source_t *ts)
         }
         report.buttons = buttons;
 
-        // needs to be normalized
-        report.lx = myGamepad->axisX();
-        report.ly = myGamepad->axisY();
-        report.rx = myGamepad->axisRX();
-        report.ry = myGamepad->axisRY();
+        report.lx = convert_to_switch_axis(myGamepad->axisX());
+        report.ly = convert_to_switch_axis(myGamepad->axisY());
+        report.rx = convert_to_switch_axis(myGamepad->axisRX());
+        report.ry = convert_to_switch_axis(myGamepad->axisRY());
 
         if (myGamepad->brake() > 0)
         {
@@ -139,7 +154,15 @@ static void work_timer_handler(btstack_timer_source_t *ts)
         {
             report.buttons |= SWITCH_MASK_ZR;
         }
-        if (myGamepad->miscSystem()) // not working
+        if (myGamepad->miscSystem())
+        {
+            report.buttons |= SWITCH_MASK_HOME;
+        }
+        if (false) // bluepad doesn't detect this
+        {
+            report.buttons |= SWITCH_MASK_CAPTURE;
+        }
+        if (myGamepad->miscBack()) // xbox series doesn't detect this
         {
             report.buttons |= SWITCH_MASK_MINUS;
         }

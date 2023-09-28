@@ -11,7 +11,7 @@ set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 
-project(Bluepad32_PicoW C CXX ASM)
+project(PicoSwitchWGA C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(PICO_CXX_ENABLE_EXCEPTIONS 1)
@@ -19,7 +19,7 @@ set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_executable(Bluepad32_PicoW
+add_executable(PicoSwitchWGA
     src/main.cpp
     src/bluepad_main.cpp
     src/usb_descriptors.c
@@ -29,8 +29,8 @@ add_executable(Bluepad32_PicoW
     src/picoHandler/PicoGamepad.cpp
 )
 
-target_include_directories(Bluepad32_PicoW PRIVATE src include bluepad32/include)
-target_link_libraries(Bluepad32_PicoW 
+target_include_directories(PicoSwitchWGA PRIVATE src include bluepad32/include)
+target_link_libraries(PicoSwitchWGA 
     pico_stdlib
     pico_cyw43_arch_none
     pico_btstack_classic
@@ -44,6 +44,6 @@ target_link_libraries(Bluepad32_PicoW
 
 add_subdirectory(bluepad32)
 
-pico_enable_stdio_usb(Bluepad32_PicoW 1)
-pico_enable_stdio_uart(Bluepad32_PicoW 1)
-pico_add_extra_outputs(Bluepad32_PicoW)
+pico_enable_stdio_usb(PicoSwitchWGA 1)
+pico_enable_stdio_uart(PicoSwitchWGA 1)
+pico_add_extra_outputs(PicoSwitchWGA)
