@@ -10,11 +10,11 @@
   freely, subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
+	 claim that you wrote the original software. If you use this software
+	 in a product, an acknowledgment in the product documentation would be
+	 appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
 
@@ -64,6 +64,7 @@ typedef enum {
   CONTROLLER_TYPE_GenericController = 53,        // (Bluepad32)
   CONTROLLER_TYPE_NimbusController = 54,         // (Bluepad32)
   CONTROLLER_TYPE_OUYAController = 55,           // (Bluepad32)
+  CONTROLLER_TYPE_PSMoveController = 56,		 // (Bluepad32)
 
   CONTROLLER_TYPE_LastController,  // Don't add game controllers below this enumeration -
                                    // this enumeration can change value
@@ -75,10 +76,11 @@ typedef enum {
 // clang-format on
 
 #define MAKE_CONTROLLER_ID(nVID, nPID) (uint32_t)(nVID << 16 | nPID)
-typedef struct {
-    uint32_t device_id;
-    uni_controller_type_t controller_type;
-    const char* name;
+typedef struct
+{
+	uint32_t device_id;
+	uni_controller_type_t controller_type;
+	const char *name;
 } uni_controller_description_t;
 
 // clang-format off
@@ -689,20 +691,24 @@ static const uni_controller_description_t arrControllers[] = {
     { MAKE_CONTROLLER_ID(0x057e, 0x2019), CONTROLLER_TYPE_SwitchProController, NULL }, // Nintendo Online N64 Controller
     { MAKE_CONTROLLER_ID(0x057e, 0x201e), CONTROLLER_TYPE_SwitchProController, NULL }, // Nintendo Online SEGA Genesis Controller
 
-
+	// Sony
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x03d5 ), CONTROLLER_TYPE_PSMoveController, NULL },	   // Sony PS Move (Motion Controller)
 	// Bluepad32 addons to here.
 };
 // clang-format on
 
-static inline uni_controller_type_t guess_controller_type(uint16_t nVID, uint16_t nPID) {
-    uint32_t device_id = MAKE_CONTROLLER_ID(nVID, nPID);
-    for (uint32_t i = 0; i < sizeof(arrControllers) / sizeof(arrControllers[0]); ++i) {
-        if (device_id == arrControllers[i].device_id) {
-            return arrControllers[i].controller_type;
-        }
-    }
+static inline uni_controller_type_t guess_controller_type(uint16_t nVID, uint16_t nPID)
+{
+	uint32_t device_id = MAKE_CONTROLLER_ID(nVID, nPID);
+	for (uint32_t i = 0; i < sizeof(arrControllers) / sizeof(arrControllers[0]); ++i)
+	{
+		if (device_id == arrControllers[i].device_id)
+		{
+			return arrControllers[i].controller_type;
+		}
+	}
 #undef MAKE_CONTROLLER_ID
-    return CONTROLLER_TYPE_Unknown;
+	return CONTROLLER_TYPE_Unknown;
 }
 
-#endif  // UNI_HID_DEVICE_VENDORS_H
+#endif // UNI_HID_DEVICE_VENDORS_H

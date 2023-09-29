@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #define BTSTACK_WORK_TIMER_MS 5
+#define AXIS_DEADZONE 0xa
 
 static btstack_timer_source_t work_timer;
 
@@ -91,10 +92,117 @@ uint8_t convert_to_switch_axis(int32_t bluepadAxis)
 
     if (bluepadAxis < SWITCH_JOYSTICK_MIN)
         bluepadAxis = 0;
+    else if ((bluepadAxis > (SWITCH_JOYSTICK_MID - AXIS_DEADZONE)) && (bluepadAxis < (SWITCH_JOYSTICK_MID + AXIS_DEADZONE)))
+    {
+        bluepadAxis = SWITCH_JOYSTICK_MID;
+    }
     else if (bluepadAxis > SWITCH_JOYSTICK_MAX)
         bluepadAxis = SWITCH_JOYSTICK_MAX;
 
     return (uint8_t)bluepadAxis;
+}
+
+void fill_report(GamepadPtr myGamepad)
+{
+
+    uint16_t buttons = myGamepad->buttons();
+    uint16_t buttons_aux = buttons; // keep initial state
+
+    // remove wrong masking
+    buttons &= ~SWITCH_MASK_A;
+    buttons &= ~SWITCH_MASK_B;
+    buttons &= ~SWITCH_MASK_X;
+    buttons &= ~SWITCH_MASK_Y;
+    buttons &= ~SWITCH_MASK_MINUS;
+    buttons &= ~SWITCH_MASK_PLUS;
+
+    // now apply correct masking
+    if (buttons_aux & SWITCH_MASK_A)
+    {
+        buttons |= SWITCH_MASK_Y;
+    }
+    if (buttons_aux & SWITCH_MASK_B)
+    {
+        buttons |= SWITCH_MASK_A;
+    }
+    if (buttons_aux & SWITCH_MASK_Y)
+    {
+        buttons |= SWITCH_MASK_B;
+    }
+    if (buttons_aux & SWITCH_MASK_X)
+    {
+        buttons |= SWITCH_MASK_X;
+    }
+    if (buttons_aux & SWITCH_MASK_MINUS)
+    {
+        buttons |= SWITCH_MASK_L3;
+    }
+    if (buttons_aux & SWITCH_MASK_PLUS)
+    {
+        buttons |= SWITCH_MASK_R3;
+    }
+    report.buttons = buttons;
+
+    report.lx = convert_to_switch_axis(myGamepad->axisX());
+    report.ly = convert_to_switch_axis(myGamepad->axisY());
+    report.rx = convert_to_switch_axis(myGamepad->axisRX());
+    report.ry = convert_to_switch_axis(myGamepad->axisRY());
+
+    if (myGamepad->brake() > 0)
+    {
+        report.buttons |= SWITCH_MASK_ZL;
+    }
+    if (myGamepad->throttle() > 0)
+    {
+        report.buttons |= SWITCH_MASK_ZR;
+    }
+    if (myGamepad->miscSystem())
+    {
+        report.buttons |= SWITCH_MASK_HOME;
+    }
+    if (myGamepad->miscCapture())
+    {
+        report.buttons |= SWITCH_MASK_CAPTURE;
+    }
+    if (myGamepad->miscBack())
+    {
+        report.buttons |= SWITCH_MASK_MINUS;
+    }
+    if (myGamepad->miscHome())
+    {
+        report.buttons |= SWITCH_MASK_PLUS;
+    }
+
+    switch (myGamepad->dpad())
+    {
+    case DPAD_UP:
+        report.hat = SWITCH_HAT_UP;
+        break;
+    case DPAD_DOWN:
+        report.hat = SWITCH_HAT_DOWN;
+        break;
+    case DPAD_LEFT:
+        report.hat = SWITCH_HAT_LEFT;
+        break;
+    case DPAD_RIGHT:
+        report.hat = SWITCH_HAT_RIGHT;
+        break;
+    case DPAD_UP | DPAD_RIGHT:
+        report.hat = SWITCH_HAT_UPRIGHT;
+        break;
+    case DPAD_DOWN | DPAD_RIGHT:
+        report.hat = SWITCH_HAT_DOWNRIGHT;
+        break;
+    case DPAD_DOWN | DPAD_LEFT:
+        report.hat = SWITCH_HAT_DOWNLEFT;
+        break;
+    case DPAD_UP | DPAD_LEFT:
+        report.hat = SWITCH_HAT_UPLEFT;
+        break;
+    default:
+        report.hat = SWITCH_HAT_NOTHING;
+        break;
+    }
 }
 
 static void work_timer_handler(btstack_timer_source_t *ts)
@@ -104,105 +212,7 @@ static void work_timer_handler(btstack_timer_source_t *ts)
     GamepadPtr myGamepad = myGamepads[0];
     if (myGamepad && myGamepad->isConnected())
     {
-
-        // report.buttons = myGamepad->buttons();
-        uint16_t buttons = myGamepad->buttons();
-        uint16_t buttons_aux = buttons; // keep initial state
-
-        buttons &= ~SWITCH_MASK_A;
-        buttons &= ~SWITCH_MASK_B;
-        buttons &= ~SWITCH_MASK_X;
-        buttons &= ~SWITCH_MASK_Y;
-        buttons &= ~SWITCH_MASK_MINUS;
-        buttons &= ~SWITCH_MASK_PLUS;
-
-        // now apply correct masking
-        if (buttons_aux & SWITCH_MASK_A)
-        {
-            buttons |= SWITCH_MASK_Y;
-        }
-        if (buttons_aux & SWITCH_MASK_B)
-        {
-            buttons |= SWITCH_MASK_A;
-        }
-        if (buttons_aux & SWITCH_MASK_Y)
-        {
-            buttons |= SWITCH_MASK_B;
-        }
-        if (buttons_aux & SWITCH_MASK_X)
-        {
-            buttons |= SWITCH_MASK_X;
-        }
-        if (buttons_aux & SWITCH_MASK_MINUS)
-        {
-            buttons |= SWITCH_MASK_L3;
-        }
-        if (buttons_aux & SWITCH_MASK_PLUS)
-        {
-            buttons |= SWITCH_MASK_R3;
-        }
-        report.buttons = buttons;
-
-        report.lx = convert_to_switch_axis(myGamepad->axisX());
-        report.ly = convert_to_switch_axis(myGamepad->axisY());
-        report.rx = convert_to_switch_axis(myGamepad->axisRX());
-        report.ry = convert_to_switch_axis(myGamepad->axisRY());
-
-        if (myGamepad->brake() > 0)
-        {
-            report.buttons |= SWITCH_MASK_ZL;
-        }
-        if (myGamepad->throttle() > 0)
-        {
-            report.buttons |= SWITCH_MASK_ZR;
-        }
-        if (myGamepad->miscSystem())
-        {
-            report.buttons |= SWITCH_MASK_HOME;
-        }
-        if (false) // bluepad doesn't detect this
-        {
-            report.buttons |= SWITCH_MASK_CAPTURE;
-        }
-        if (myGamepad->miscBack()) // xbox series doesn't detect this
-        {
-            report.buttons |= SWITCH_MASK_MINUS;
-        }
-        if (myGamepad->miscHome())
-        {
-            report.buttons |= SWITCH_MASK_PLUS;
-        }
-
-        switch (myGamepad->dpad())
-        {
-        case DPAD_UP:
-            report.hat = SWITCH_HAT_UP;
-            break;
-        case DPAD_DOWN:
-            report.hat = SWITCH_HAT_DOWN;
-            break;
-        case DPAD_LEFT:
-            report.hat = SWITCH_HAT_LEFT;
-            break;
-        case DPAD_RIGHT:
-            report.hat = SWITCH_HAT_RIGHT;
-            break;
-        case DPAD_UP | DPAD_RIGHT:
-            report.hat = SWITCH_HAT_UPRIGHT;
-            break;
-        case DPAD_DOWN | DPAD_RIGHT:
-            report.hat = SWITCH_HAT_DOWNRIGHT;
-            break;
-        case DPAD_DOWN | DPAD_LEFT:
-            report.hat = SWITCH_HAT_DOWNLEFT;
-            break;
-        case DPAD_UP | DPAD_LEFT:
-            report.hat = SWITCH_HAT_UPLEFT;
-            break;
-        default:
-            report.hat = SWITCH_HAT_NOTHING;
-            break;
-        }
+        fill_report(myGamepad);
     }
 
     // set timer for next tick

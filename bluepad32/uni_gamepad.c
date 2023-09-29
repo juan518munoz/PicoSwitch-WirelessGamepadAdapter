@@ -29,9 +29,10 @@ limitations under the License.
 static uni_gamepad_mappings_t map;
 static bool mappings_enabled = false;
 
-static struct {
+static struct
+{
     uni_controller_type_t type;
-    char* name;
+    char *name;
 } controller_names[] = {
     {CONTROLLER_TYPE_UnknownSteamController, "Unknown Steam"},
     {CONTROLLER_TYPE_SteamController, "Steam"},
@@ -59,6 +60,7 @@ static struct {
     {CONTROLLER_TYPE_GenericController, "Generic"},
     {CONTROLLER_TYPE_NimbusController, "Nimbus"},
     {CONTROLLER_TYPE_OUYAController, "OUYA"},
+    {CONTROLLER_TYPE_PSMoveController, "PS Move"},
 
     {CONTROLLER_TYPE_GenericKeyboard, "Keyboard"},
     {CONTROLLER_TYPE_GenericMouse, "Mouse"},
@@ -91,45 +93,51 @@ const uni_gamepad_mappings_t GAMEPAD_DEFAULT_MAPPINGS = {
     .axis_rx = UNI_GAMEPAD_MAPPINGS_AXIS_RX,
     .axis_ry = UNI_GAMEPAD_MAPPINGS_AXIS_RY,
 
-    .misc_button_back = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_BACK,
-    .misc_button_home = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_HOME,
+    .misc_button_select = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_SELECT,
+    .misc_button_start = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_START,
     .misc_button_system = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_SYSTEM,
+    .misc_button_capture = UNI_GAMEPAD_MAPPINGS_MISC_BUTTON_CAPTURE,
 };
 
-const int AXIS_NORMALIZE_RANGE = 1024;  // 10-bit resolution (1024)
+const int AXIS_NORMALIZE_RANGE = 1024; // 10-bit resolution (1024)
 const int AXIS_THRESHOLD = (1024 / 8);
 
-static int32_t get_mappings_value_for_axis(uni_gamepad_mappings_axis_t axis_type, const uni_gamepad_t* gp) {
-    switch (axis_type) {
-        case UNI_GAMEPAD_MAPPINGS_AXIS_X:
-            return gp->axis_x;
-        case UNI_GAMEPAD_MAPPINGS_AXIS_Y:
-            return gp->axis_y;
-        case UNI_GAMEPAD_MAPPINGS_AXIS_RX:
-            return gp->axis_rx;
-        case UNI_GAMEPAD_MAPPINGS_AXIS_RY:
-            return gp->axis_ry;
-        default:
-            break;
+static int32_t get_mappings_value_for_axis(uni_gamepad_mappings_axis_t axis_type, const uni_gamepad_t *gp)
+{
+    switch (axis_type)
+    {
+    case UNI_GAMEPAD_MAPPINGS_AXIS_X:
+        return gp->axis_x;
+    case UNI_GAMEPAD_MAPPINGS_AXIS_Y:
+        return gp->axis_y;
+    case UNI_GAMEPAD_MAPPINGS_AXIS_RX:
+        return gp->axis_rx;
+    case UNI_GAMEPAD_MAPPINGS_AXIS_RY:
+        return gp->axis_ry;
+    default:
+        break;
     }
     loge("get_mappings_value_for_axis(): should not happen\n");
     return -1;
 }
 
-static int32_t get_mappings_value_for_pedal(uni_gamepad_mappings_pedal_t pedal_type, const uni_gamepad_t* gp) {
-    switch (pedal_type) {
-        case UNI_GAMEPAD_MAPPINGS_PEDAL_THROTTLE:
-            return gp->throttle;
-        case UNI_GAMEPAD_MAPPINGS_PEDAL_BRAKE:
-            return gp->brake;
-        default:
-            break;
+static int32_t get_mappings_value_for_pedal(uni_gamepad_mappings_pedal_t pedal_type, const uni_gamepad_t *gp)
+{
+    switch (pedal_type)
+    {
+    case UNI_GAMEPAD_MAPPINGS_PEDAL_THROTTLE:
+        return gp->throttle;
+    case UNI_GAMEPAD_MAPPINGS_PEDAL_BRAKE:
+        return gp->brake;
+    default:
+        break;
     }
     loge("get_mappings_value_for_pedal(): should not happen\n");
     return -1;
 }
 
-uni_gamepad_t uni_gamepad_remap(const uni_gamepad_t* gp) {
+uni_gamepad_t uni_gamepad_remap(const uni_gamepad_t *gp)
+{
     uni_gamepad_t new_gp = {0};
 
     // Quick return if mappings is not enabled.
@@ -166,12 +174,14 @@ uni_gamepad_t uni_gamepad_remap(const uni_gamepad_t* gp) {
     if (gp->dpad & DPAD_RIGHT)
         new_gp.dpad |= BIT(map.dpad_right);
 
-    if (gp->misc_buttons & MISC_BUTTON_BACK)
-        new_gp.misc_buttons |= BIT(map.misc_button_back);
-    if (gp->misc_buttons & MISC_BUTTON_HOME)
-        new_gp.misc_buttons |= BIT(map.misc_button_home);
     if (gp->misc_buttons & MISC_BUTTON_SYSTEM)
         new_gp.misc_buttons |= BIT(map.misc_button_system);
+    if (gp->misc_buttons & MISC_BUTTON_SELECT)
+        new_gp.misc_buttons |= BIT(map.misc_button_select);
+    if (gp->misc_buttons & MISC_BUTTON_START)
+        new_gp.misc_buttons |= BIT(map.misc_button_start);
+    if (gp->misc_buttons & MISC_BUTTON_CAPTURE)
+        new_gp.misc_buttons |= BIT(map.misc_button_capture);
 
     new_gp.axis_x = get_mappings_value_for_axis(map.axis_x, gp);
     if (map.axis_x_inverted)
@@ -192,21 +202,31 @@ uni_gamepad_t uni_gamepad_remap(const uni_gamepad_t* gp) {
     return new_gp;
 }
 
-void uni_gamepad_set_mappings(const uni_gamepad_mappings_t* mappings) {
+void uni_gamepad_set_mappings(const uni_gamepad_mappings_t *mappings)
+{
     mappings_enabled = true;
     map = *mappings;
 }
 
-void uni_gamepad_dump(const uni_gamepad_t* gp) {
+void uni_gamepad_dump(const uni_gamepad_t *gp)
+{
     // Don't add "\n"
-    logi("dpad=0x%02x, x=%d, y=%d, rx=%d, ry=%d, brake=%d, accel=%d, buttons=0x%08x, misc=0x%02x", gp->dpad, gp->axis_x,
-         gp->axis_y, gp->axis_rx, gp->axis_ry,                   // axis
-         gp->brake, gp->throttle, gp->buttons, gp->misc_buttons  // misc
+    logi(
+        "dpad=0x%02x, x=%4d, y=%4d, rx=%4d, ry=%4d, brake=%4d, throttle=%4d, buttons=0x%04x, misc=0x%02x, "
+        "gyro=%7d,%7d,%7d accel=%7d,%7d,%7d",
+        gp->dpad,                                         // dpad
+        gp->axis_x, gp->axis_y, gp->axis_rx, gp->axis_ry, // axis
+        gp->brake, gp->throttle,                          // brake/gas
+        gp->buttons, gp->misc_buttons,                    // buttons
+        gp->gyro[0], gp->gyro[1], gp->gyro[2],            // gyro
+        gp->accel[0], gp->accel[1], gp->accel[2]          // accel
     );
 }
 
-char* uni_gamepad_get_model_name(int type) {
-    for (size_t i = 0; i < ARRAY_SIZE(controller_names); i++) {
+char *uni_gamepad_get_model_name(int type)
+{
+    for (size_t i = 0; i < ARRAY_SIZE(controller_names); i++)
+    {
         if (controller_names[i].type == type)
             return controller_names[i].name;
     }

@@ -66,7 +66,10 @@ limitations under the License.
 
 // HID usages for Consumer Page
 #define HID_USAGE_MENU                          0x40
+#define HID_USAGE_ASSIGN_SELECTION              0x81
+#define HID_USAGE_ORDER_MOVIE                   0x85
 #define HID_USAGE_MEDIA_SELECT_TV               0x89
+#define HID_USAGE_MEDIA_SELECT_SECURITY         0x99
 #define HID_USAGE_PLAY                          0xb0
 #define HID_USAGE_PAUSE                         0xb1
 #define HID_USAGE_RECORD                        0xb2
@@ -83,4 +86,4 @@ limitations under the License.
 
 // clang-format on
 
-#endif  // HID_USAGE_H
+#endif // HID_USAGE_H

@@ -14,11 +14,13 @@
 #include "PicoControllerData.h"
 #include "PicoControllerProperties.h"
 
-class Controller {
-   public:
+class Controller
+{
+public:
     // FIXME: Should not be duplicated.
     // Must match values from "uni_hid_device_vendors.h"
-    enum {
+    enum
+    {
         CONTROLLER_TYPE_None = -1,
         CONTROLLER_TYPE_Unknown = 0,
 
@@ -42,21 +44,21 @@ class Controller {
         CONTROLLER_TYPE_SwitchJoyConPair = 41,
         CONTROLLER_TYPE_SwitchInputOnlyController = 42,
         CONTROLLER_TYPE_MobileTouch = 43,
-        CONTROLLER_TYPE_XInputSwitchController = 44,  // Client-side only, used to mark Switch-compatible controllers as
-                                                      // not supporting Switch controller protocol
+        CONTROLLER_TYPE_XInputSwitchController = 44, // Client-side only, used to mark Switch-compatible controllers as
+                                                     // not supporting Switch controller protocol
         CONTROLLER_TYPE_PS5Controller = 45,
 
         // Bluepad32 own extensions
-        CONTROLLER_TYPE_iCadeController = 50,          // (Bluepad32)
-        CONTROLLER_TYPE_SmartTVRemoteController = 51,  // (Bluepad32)
-        CONTROLLER_TYPE_EightBitdoController = 52,     // (Bluepad32)
-        CONTROLLER_TYPE_GenericController = 53,        // (Bluepad32)
-        CONTROLLER_TYPE_NimbusController = 54,         // (Bluepad32)
-        CONTROLLER_TYPE_OUYAController = 55,           // (Bluepad32)
+        CONTROLLER_TYPE_iCadeController = 50,         // (Bluepad32)
+        CONTROLLER_TYPE_SmartTVRemoteController = 51, // (Bluepad32)
+        CONTROLLER_TYPE_EightBitdoController = 52,    // (Bluepad32)
+        CONTROLLER_TYPE_GenericController = 53,       // (Bluepad32)
+        CONTROLLER_TYPE_NimbusController = 54,        // (Bluepad32)
+        CONTROLLER_TYPE_OUYAController = 55,          // (Bluepad32)
 
-        CONTROLLER_TYPE_LastController,  // Don't add game controllers below this
-                                         // enumeration - this enumeration can
-                                         // change value
+        CONTROLLER_TYPE_LastController, // Don't add game controllers below this
+                                        // enumeration - this enumeration can
+                                        // change value
 
         // Keyboards and Mice
         CONTROLLER_TYPE_GenericKeyboard = 400,
@@ -86,7 +88,8 @@ class Controller {
     //
 
     // Returns the state of all buttons.
-    uint16_t buttons() const {
+    uint16_t buttons() const
+    {
         if (_data.klass == UNI_CONTROLLER_CLASS_GAMEPAD)
             return _data.gamepad.buttons;
         if (_data.klass == UNI_CONTROLLER_CLASS_MOUSE)
@@ -96,7 +99,8 @@ class Controller {
     }
 
     // Returns the state of all misc buttons.
-    uint16_t miscButtons() const {
+    uint16_t miscButtons() const
+    {
         if (_data.klass == UNI_CONTROLLER_CLASS_GAMEPAD)
             return _data.gamepad.misc_buttons;
         if (_data.klass == UNI_CONTROLLER_CLASS_MOUSE)
@@ -121,6 +125,7 @@ class Controller {
     bool miscSystem() const { return miscButtons() & MISC_BUTTON_SYSTEM; }
     bool miscBack() const { return miscButtons() & MISC_BUTTON_BACK; }
     bool miscHome() const { return miscButtons() & MISC_BUTTON_HOME; }
+    bool miscCapture() const { return miscButtons() & MISC_BUTTON_CAPTURE; }
 
     //
     // Mouse related
@@ -165,7 +170,7 @@ class Controller {
     void setColorLED(uint8_t red, uint8_t green, uint8_t blue) const;
     void setRumble(uint8_t force, uint8_t duration) const;
 
-   private:
+private:
     void onConnected();
     void onDisconnected();
 
@@ -177,12 +182,13 @@ class Controller {
 
     // Delete copy constructor to avoid copying the state by mistake. If so,
     // chances are that the controller won't get updated automatically.
-    Controller(const Controller&) = delete;
+    Controller(const Controller &) = delete;
 
     // For converting controller types to names.
-    struct controllerNames {
+    struct controllerNames
+    {
         int type;
-        const char* name;
+        const char *name;
     };
     static const struct controllerNames _controllerNames[];
 
@@ -190,6 +196,6 @@ class Controller {
     friend class Bluepad32;
 };
 
-typedef Controller* ControllerPtr;
+typedef Controller *ControllerPtr;
 
-#endif  // BP32_ARDUINO_CONTROLLER_H
+#endif // BP32_ARDUINO_CONTROLLER_H

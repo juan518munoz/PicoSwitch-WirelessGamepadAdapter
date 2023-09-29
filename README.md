@@ -12,9 +12,7 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
    ![image](https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/62400508/9185e9d4-0b41-44cb-83b8-f706c67d144c)
 
 ## Known issues
-- Back button (minus) not mapped correctly on Series X gamepad.
-- Share button (capture) not mapped correctly on Series X gamepad.
-- Other gamepads need testing.
+- Only gamepad tested as of now is Series X, no issues shown so far.
 
 ## Building
 1. Run `build.sh` to build the project, better instructions will be added later.
