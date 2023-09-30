@@ -72,6 +72,9 @@ extern "C"
 // CFG_TUSB_DEBUG is defined by compiler in DEBUG build
 // #define CFG_TUSB_DEBUG           0
 
+// Enable Device stack
+#define CFG_TUD_ENABLED 1
+
 /* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.
  * Tinyusb use follows macros to declare transferring memory so that they can be put
  * into those specific section.

@@ -22,36 +22,56 @@ void blink_task(uint8_t times)
 
 void send_switch_hid_report(SwitchOutReport report)
 {
-    try
-    {
-        tud_task();
-        if (tud_suspended())
-        {
-            blink_task(2);
-            tud_remote_wakeup();
-        }
-        if (tud_hid_ready())
-        {
-            tud_hid_report(0, &report, sizeof(report));
+    // try
+    // {
+    //     tud_task();
+    //     if (tud_suspended())
+    //     {
+    //         blink_task(2);
+    //         tud_remote_wakeup();
+    //     }
+    //     if (tud_hid_ready())
+    //     {
+    //         tud_hid_report(0, &report, sizeof(report));
 
-            SwitchOutReport dummy_report = {
-                .buttons = 0,
-                .hat = SWITCH_HAT_NOTHING,
-                .lx = SWITCH_JOYSTICK_MID,
-                .ly = SWITCH_JOYSTICK_MID,
-                .rx = SWITCH_JOYSTICK_MID,
-                .ry = SWITCH_JOYSTICK_MID};
-            tud_hid_report(1, &dummy_report, sizeof(dummy_report));
-        }
-    }
-    catch (int e)
+    //         SwitchOutReport dummy_report = {
+    //             .buttons = 0,
+    //             .hat = SWITCH_HAT_NOTHING,
+    //             .lx = SWITCH_JOYSTICK_MID,
+    //             .ly = SWITCH_JOYSTICK_MID,
+    //             .rx = SWITCH_JOYSTICK_MID,
+    //             .ry = SWITCH_JOYSTICK_MID};
+    //         tud_hid_report(1, &dummy_report, sizeof(dummy_report));
+    //     }
+    // }
+    // catch (int e)
+    // {
+    //     tud_task();
+    //     if (tud_suspended())
+    //     {
+    //         blink_task(3);
+    //         tud_remote_wakeup();
+    //     }
+    // }
+    tud_task();
+    if (tud_suspended())
     {
-        tud_task();
-        if (tud_suspended())
-        {
-            blink_task(3);
-            tud_remote_wakeup();
-        }
+        tud_remote_wakeup();
+    }
+
+    if (tud_hid_ready())
+    {
+
+        // tud_hid_report(0, &report, sizeof(report));
+
+        // SwitchOutReport dummy_report = {
+        //     .buttons = 0x01,
+        //     .hat = SWITCH_HAT_NOTHING,
+        //     .lx = SWITCH_JOYSTICK_MID,
+        //     .ly = SWITCH_JOYSTICK_MID,
+        //     .rx = SWITCH_JOYSTICK_MID,
+        //     .ry = SWITCH_JOYSTICK_MID};
+        // tud_hid_report(1, &report, sizeof(report));
     }
 }
 
