@@ -32,15 +32,16 @@ void send_switch_hid_report(SwitchOutReport report)
         }
         if (tud_hid_ready())
         {
-            // SwitchOutReport out_report = {
-            //     .buttons = buttons,
-            //     .hat = SWITCH_HAT_NOTHING,
-            //     .lx = SWITCH_JOYSTICK_MID,
-            //     .ly = SWITCH_JOYSTICK_MID,
-            //     .rx = SWITCH_JOYSTICK_MID,
-            //     .ry = SWITCH_JOYSTICK_MID};
-
             tud_hid_report(0, &report, sizeof(report));
+
+            SwitchOutReport dummy_report = {
+                .buttons = 0,
+                .hat = SWITCH_HAT_NOTHING,
+                .lx = SWITCH_JOYSTICK_MID,
+                .ly = SWITCH_JOYSTICK_MID,
+                .rx = SWITCH_JOYSTICK_MID,
+                .ry = SWITCH_JOYSTICK_MID};
+            tud_hid_report(1, &dummy_report, sizeof(dummy_report));
         }
     }
     catch (int e)
