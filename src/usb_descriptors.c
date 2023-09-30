@@ -80,8 +80,8 @@ uint8_t const desc_configuration[] =
         TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 500),
 
         // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
-        TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 4, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 5),
-        TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 5, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 5)};
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 5),
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 5)};
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 // Application return pointer to descriptor
