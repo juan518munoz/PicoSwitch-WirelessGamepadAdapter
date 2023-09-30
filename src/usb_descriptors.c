@@ -35,12 +35,20 @@
  */
 #define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
 
+//--------------------------------------------------------------------+
+// Device Descriptors
+//--------------------------------------------------------------------+
+
 // Invoked when received GET DEVICE DESCRIPTOR
 // Application return pointer to descriptor
 uint8_t const *tud_descriptor_device_cb(void)
 {
     return switch_device_descriptor;
 }
+
+//--------------------------------------------------------------------+
+// HID Report Descriptor
+//--------------------------------------------------------------------+
 
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
@@ -49,6 +57,10 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance)
 {
     return switch_report_descriptor;
 }
+
+//--------------------------------------------------------------------+
+// Configuration Descriptor
+//--------------------------------------------------------------------+
 
 #if TUD_OPT_HIGH_SPEED
 // Per USB specs: high speed capable device must report device_qualifier and other_speed_configuration
