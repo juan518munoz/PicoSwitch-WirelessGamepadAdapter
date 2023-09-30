@@ -21,7 +21,7 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 - [x] Bluetooth connection.
 - [x] Basic button mapping.
 - [x] Complete button mapping.
-- [ ] Support multiple gamepads at once ([see example](https://github.com/hathach/tinyusb/tree/master/examples/device/hid_composite)).
+- [ ] Support multiple gamepads at once ([see example](https://github.com/raspberrypi/tinyusb/tree/e0aa405d19e35dbf58cf502b8106455c1a3c2a5c/examples/device/hid_composite)).
 - [ ] Update Bluepad32 to latest version.
 - [ ] Support other platforms.
 

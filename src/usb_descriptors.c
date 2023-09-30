@@ -62,59 +62,34 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance)
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-#if TUD_OPT_HIGH_SPEED
-// Per USB specs: high speed capable device must report device_qualifier and other_speed_configuration
+enum
+{
+    ITF_NUM_HID1,
+    ITF_NUM_HID2,
+    ITF_NUM_TOTAL
+};
 
-// other speed configuration
-uint8_t desc_other_speed_config[CONFIG_TOTAL_LEN];
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
 
-// device qualifier is mostly similar to device descriptor since we don't change configuration based on speed
-tusb_desc_device_qualifier_t const desc_device_qualifier =
+#define EPNUM_HID1 0x81
+#define EPNUM_HID2 0x82
+
+uint8_t const desc_configuration[] =
     {
-        .bLength = sizeof(tusb_desc_device_qualifier_t),
-        .bDescriptorType = TUSB_DESC_DEVICE_QUALIFIER,
-        .bcdUSB = USB_BCD,
+        // Config number, interface count, string index, total length, attribute, power in mA
+        TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 500),
 
-        .bDeviceClass = 0x00,
-        .bDeviceSubClass = 0x00,
-        .bDeviceProtocol = 0x00,
-
-        .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
-        .bNumConfigurations = 0x01,
-        .bReserved = 0x00};
-
-// Invoked when received GET DEVICE QUALIFIER DESCRIPTOR request
-// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete.
-// device_qualifier descriptor describes information about a high-speed capable device that would
-// change if the device were operating at the other speed. If not highspeed capable stall this request.
-uint8_t const *tud_descriptor_device_qualifier_cb(void)
-{
-    return (uint8_t const *)&desc_device_qualifier;
-}
-
-// Invoked when received GET OTHER SEED CONFIGURATION DESCRIPTOR request
-// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
-// Configuration descriptor in the other speed e.g if high speed then this is for full speed and vice versa
-uint8_t const *tud_descriptor_other_speed_configuration_cb(uint8_t index)
-{
-    (void)index; // for multiple configurations
-
-    // other speed config is basically configuration with type = OHER_SPEED_CONFIG
-    memcpy(desc_other_speed_config, desc_configuration, CONFIG_TOTAL_LEN);
-    desc_other_speed_config[1] = TUSB_DESC_OTHER_SPEED_CONFIG;
-
-    // this example use the same configuration for both high and full speed mode
-    return desc_other_speed_config;
-}
-
-#endif // highspeed
+        // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 4, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 5),
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 5, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 5)};
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index)
 {
-    return switch_configuration_descriptor;
+    // return switch_configuration_descriptor;
+    return desc_configuration;
 }
 
 //--------------------------------------------------------------------+

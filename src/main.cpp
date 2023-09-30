@@ -59,19 +59,13 @@ void send_switch_hid_report(SwitchOutReport report)
         tud_remote_wakeup();
     }
 
-    if (tud_hid_ready())
+    if (tud_hid_n_ready(0))
     {
-
-        // tud_hid_report(0, &report, sizeof(report));
-
-        // SwitchOutReport dummy_report = {
-        //     .buttons = 0x01,
-        //     .hat = SWITCH_HAT_NOTHING,
-        //     .lx = SWITCH_JOYSTICK_MID,
-        //     .ly = SWITCH_JOYSTICK_MID,
-        //     .rx = SWITCH_JOYSTICK_MID,
-        //     .ry = SWITCH_JOYSTICK_MID};
-        // tud_hid_report(1, &report, sizeof(report));
+        tud_hid_n_report(0, 0, &report, sizeof(report));
+    }
+    if (tud_hid_n_ready(1))
+    {
+        tud_hid_n_report(1, 0, &report, sizeof(report));
     }
 }
 
