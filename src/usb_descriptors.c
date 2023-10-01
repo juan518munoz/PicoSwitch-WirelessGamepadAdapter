@@ -66,13 +66,17 @@ enum
 {
     ITF_NUM_HID1,
     ITF_NUM_HID2,
+    ITF_NUM_HID3,
+    ITF_NUM_HID4,
     ITF_NUM_TOTAL
 };
 
-#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
 
 #define EPNUM_HID1 0x81
 #define EPNUM_HID2 0x82
+#define EPNUM_HID3 0x83
+#define EPNUM_HID4 0x84
 
 uint8_t const desc_configuration[] =
     {
@@ -81,7 +85,9 @@ uint8_t const desc_configuration[] =
 
         // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
         TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 1),
-        TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 1)};
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 1),
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID3, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID3, CFG_TUD_HID_EP_BUFSIZE, 1),
+        TUD_HID_DESCRIPTOR(ITF_NUM_HID4, 0, HID_ITF_PROTOCOL_NONE, sizeof(switch_report_descriptor), EPNUM_HID4, CFG_TUD_HID_EP_BUFSIZE, 1)};
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 // Application return pointer to descriptor
