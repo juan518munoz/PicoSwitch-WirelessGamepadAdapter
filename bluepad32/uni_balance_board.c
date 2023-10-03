@@ -16,10 +16,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ****************************************************************************/
 
-#include "uni_balance_board.h"
+#include "uni_controller.h"
 #include "uni_log.h"
 
-void uni_balance_board_dump(const uni_balance_board_t* bb) {
-    // Don't add "\n"
-    logi("tl=%d, tr=%d, bl=%d, br=%d, temperature=%d", bb->tl, bb->tr, bb->bl, bb->br, bb->temperature);
+void uni_controller_dump(const uni_controller_t *ctl)
+{
+    switch (ctl->klass)
+    {
+    case UNI_CONTROLLER_CLASS_BALANCE_BOARD:
+        uni_balance_board_dump(&ctl->balance_board);
+        break;
+    case UNI_CONTROLLER_CLASS_GAMEPAD:
+        uni_gamepad_dump(&ctl->gamepad);
+        break;
+    case UNI_CONTROLLER_CLASS_MOUSE:
+        uni_mouse_dump(&ctl->mouse);
+        break;
+    default:
+        logi("uni_controller_dump: Unsupported controller class: %d\n", ctl->klass);
+        break;
+    }
+    logi(", battery=%d\n", ctl->battery);
 }

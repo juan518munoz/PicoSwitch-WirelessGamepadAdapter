@@ -20,7 +20,6 @@ limitations under the License.
 #define UNI_MAIN_H
 
 int uni_main(int argc, const char **argv);
-
 void uni_main_core();
 
 #endif // UNI_MAIN_H

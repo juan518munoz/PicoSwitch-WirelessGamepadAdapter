@@ -4,7 +4,7 @@
 #include "PicoBluepad32.h"
 #include "sdkconfig.h"
 #include <inttypes.h>
-#include <uni_bluetooth.h>
+#include <uni_bt.h>
 #include <uni_log.h>
 #include <uni_platform_arduino.h>
 #include <uni_version.h>
@@ -64,12 +64,12 @@ void Bluepad32::update()
 
 void Bluepad32::forgetBluetoothKeys()
 {
-    uni_bluetooth_del_keys_safe();
+    uni_bt_del_keys_safe();
 }
 
 void Bluepad32::enableNewBluetoothConnections(bool enabled)
 {
-    uni_bluetooth_enable_new_connections_safe(enabled);
+    uni_bt_enable_new_connections_safe(enabled);
 }
 
 void Bluepad32::setup(const GamepadCallback &onConnect, const GamepadCallback &onDisconnect)

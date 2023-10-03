@@ -29,8 +29,8 @@ limitations under the License.
 #include <nvs_flash.h>
 
 #include "sdkconfig.h"
-#include "uni_ble.h"
-#include "uni_bluetooth.h"
+#include "uni_bt_le.h"
+#include "uni_bt.h"
 #include "uni_bt_setup.h"
 #include "uni_common.h"
 #include "uni_gpio.h"
@@ -41,48 +41,55 @@ limitations under the License.
 
 #ifdef CONFIG_ESP_CONSOLE_USB_CDC
 #error This example is incompatible with USB CDC console. Please try "console_usb" example instead.
-#endif  // CONFIG_ESP_CONSOLE_USB_CDC
+#endif // CONFIG_ESP_CONSOLE_USB_CDC
 
-static const char* TAG = "console";
+static const char *TAG = "console";
 #define PROMPT_STR "bp32"
 
 static char buf_disconnect[16];
 
-static struct {
-    struct arg_dbl* value;
-    struct arg_end* end;
+static struct
+{
+    struct arg_dbl *value;
+    struct arg_end *end;
 } mouse_set_args;
 
-static struct {
-    struct arg_int* value;
-    struct arg_end* end;
+static struct
+{
+    struct arg_int *value;
+    struct arg_end *end;
 } set_gap_security_level_args;
 
-static struct {
-    struct arg_int* max;
-    struct arg_int* min;
-    struct arg_int* len;
-    struct arg_end* end;
+static struct
+{
+    struct arg_int *max;
+    struct arg_int *min;
+    struct arg_int *len;
+    struct arg_end *end;
 } set_gap_periodic_inquiry_args;
 
-static struct {
-    struct arg_int* enabled;
-    struct arg_end* end;
+static struct
+{
+    struct arg_int *enabled;
+    struct arg_end *end;
 } set_incoming_connections_enabled_args;
 
-static struct {
-    struct arg_int* enabled;
-    struct arg_end* end;
+static struct
+{
+    struct arg_int *enabled;
+    struct arg_end *end;
 } set_ble_enabled_args;
 
-static struct {
-    struct arg_int* idx;
-    struct arg_end* end;
+static struct
+{
+    struct arg_int *idx;
+    struct arg_end *end;
 } disconnect_device_args;
 
-static int list_devices(int argc, char** argv) {
+static int list_devices(int argc, char **argv)
+{
     // FIXME: Should not belong to "bluetooth"
-    uni_bluetooth_dump_devices_safe();
+    uni_bt_dump_devices_safe();
 
     // This function prints to console. print bp32> after a delay
     TickType_t ticks = pdMS_TO_TICKS(250);
@@ -90,7 +97,8 @@ static int list_devices(int argc, char** argv) {
     return 0;
 }
 
-static int mouse_get(int argc, char** argv) {
+static int mouse_get(int argc, char **argv)
+{
     char buf[32];
     float scale = uni_mouse_quadrature_get_scale_factor();
 
@@ -100,11 +108,13 @@ static int mouse_get(int argc, char** argv) {
     return 0;
 }
 
-static int mouse_set(int argc, char** argv) {
+static int mouse_set(int argc, char **argv)
+{
     float scale;
 
-    int nerrors = arg_parse(argc, argv, (void**)&mouse_set_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&mouse_set_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, mouse_set_args.end, argv[0]);
         return 1;
     }
@@ -115,11 +125,13 @@ static int mouse_set(int argc, char** argv) {
     return 0;
 }
 
-static int set_gap_security_level(int argc, char** argv) {
+static int set_gap_security_level(int argc, char **argv)
+{
     int gap;
 
-    int nerrors = arg_parse(argc, argv, (void**)&set_gap_security_level_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&set_gap_security_level_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, set_gap_security_level_args.end, argv[0]);
         return 1;
     }
@@ -130,7 +142,8 @@ static int set_gap_security_level(int argc, char** argv) {
     return 0;
 }
 
-static int get_gap_security_level(int argc, char** argv) {
+static int get_gap_security_level(int argc, char **argv)
+{
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -139,11 +152,13 @@ static int get_gap_security_level(int argc, char** argv) {
     return 0;
 }
 
-static int set_gap_periodic_inquiry(int argc, char** argv) {
+static int set_gap_periodic_inquiry(int argc, char **argv)
+{
     int min, max, len;
 
-    int nerrors = arg_parse(argc, argv, (void**)&set_gap_periodic_inquiry_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&set_gap_periodic_inquiry_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, set_gap_periodic_inquiry_args.end, argv[0]);
         return 1;
     }
@@ -158,7 +173,8 @@ static int set_gap_periodic_inquiry(int argc, char** argv) {
     return 0;
 }
 
-static int get_gap_periodic_inquiry(int argc, char** argv) {
+static int get_gap_periodic_inquiry(int argc, char **argv)
+{
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -169,40 +185,45 @@ static int get_gap_periodic_inquiry(int argc, char** argv) {
     return 0;
 }
 
-static int set_incoming_connections_enabled(int argc, char** argv) {
+static int set_incoming_connections_enabled(int argc, char **argv)
+{
     int enabled;
 
-    int nerrors = arg_parse(argc, argv, (void**)&set_incoming_connections_enabled_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&set_incoming_connections_enabled_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, set_incoming_connections_enabled_args.end, argv[0]);
         return 1;
     }
 
     enabled = set_incoming_connections_enabled_args.enabled->ival[0];
-    uni_bluetooth_enable_new_connections_safe(!!enabled);
+    uni_bt_enable_new_connections_safe(!!enabled);
     return 0;
 }
 
-static int set_ble_enabled(int argc, char** argv) {
+static int set_ble_enabled(int argc, char **argv)
+{
     int enabled;
 
-    int nerrors = arg_parse(argc, argv, (void**)&set_ble_enabled_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&set_ble_enabled_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, set_ble_enabled_args.end, argv[0]);
         return 1;
     }
 
     enabled = set_ble_enabled_args.enabled->ival[0];
-    uni_ble_set_enabled(!!enabled);
+    uni_bt_le_set_enabled(!!enabled);
     logi("Done. Restart required. Type 'restart' + Enter\n");
     return 0;
 }
 
-static int list_bluetooth_keys(int argc, char** argv) {
+static int list_bluetooth_keys(int argc, char **argv)
+{
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    uni_bluetooth_list_keys_safe();
+    uni_bt_list_keys_safe();
 
     // This function prints to console. print bp32> after a delay
     TickType_t ticks = pdMS_TO_TICKS(250);
@@ -210,21 +231,24 @@ static int list_bluetooth_keys(int argc, char** argv) {
     return 0;
 }
 
-static int del_bluetooth_keys(int argc, char** argv) {
+static int del_bluetooth_keys(int argc, char **argv)
+{
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    uni_bluetooth_del_keys_safe();
+    uni_bt_del_keys_safe();
     // This function prints to console. print bp32> after a delay
     TickType_t ticks = pdMS_TO_TICKS(250);
     vTaskDelay(ticks);
     return 0;
 }
 
-static int disconnect_device(int argc, char** argv) {
+static int disconnect_device(int argc, char **argv)
+{
     int idx;
-    int nerrors = arg_parse(argc, argv, (void**)&disconnect_device_args);
-    if (nerrors != 0) {
+    int nerrors = arg_parse(argc, argv, (void **)&disconnect_device_args);
+    if (nerrors != 0)
+    {
         arg_print_errors(stderr, disconnect_device_args.end, argv[0]);
         return 1;
     }
@@ -233,11 +257,12 @@ static int disconnect_device(int argc, char** argv) {
     if (idx < 0 || idx >= CONFIG_BLUEPAD32_MAX_DEVICES)
         return 1;
 
-    uni_bluetooth_disconnect_device_safe(idx);
+    uni_bt_disconnect_device_safe(idx);
     return 0;
 }
 
-static void register_bluepad32() {
+static void register_bluepad32()
+{
     mouse_set_args.value = arg_dbl1(NULL, NULL, "<value>", "Global mouse scale factor. Higher means faster");
     mouse_set_args.end = arg_end(2);
 
@@ -372,15 +397,16 @@ static void register_bluepad32() {
     ESP_ERROR_CHECK(esp_console_cmd_register(&cmd_disconnect_device));
 }
 
-void uni_console_init(void) {
-    esp_console_repl_t* repl = NULL;
+void uni_console_init(void)
+{
+    esp_console_repl_t *repl = NULL;
     esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
     esp_console_dev_uart_config_t uart_config = ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
     /* Prompt to be printed before each line.
      * This can be customized, made dynamic, etc.
      */
     repl_config.prompt = PROMPT_STR ">";
-    repl_config.max_cmdline_length = 80;  // CONFIG_CONSOLE_MAX_COMMAND_LINE_LENGTH;
+    repl_config.max_cmdline_length = 80; // CONFIG_CONSOLE_MAX_COMMAND_LINE_LENGTH;
 
 #if CONFIG_CONSOLE_STORE_HISTORY
     initialize_filesystem();
@@ -395,7 +421,7 @@ void uni_console_init(void) {
     register_system_common();
 #if CONFIG_BLUEPAD32_CONSOLE_NVS_COMMAND_ENABLE
     register_nvs();
-#endif  // CONFIG_BLUEPAD32_CONSOLE_NVS_COMMAND_ENABLE
+#endif // CONFIG_BLUEPAD32_CONSOLE_NVS_COMMAND_ENABLE
 
     register_bluepad32();
     uni_gpio_register_cmds();

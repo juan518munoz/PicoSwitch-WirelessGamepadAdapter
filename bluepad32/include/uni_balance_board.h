@@ -20,23 +20,25 @@ limitations under the License.
 #define UNI_BALANCE_BOARD_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stdint.h>
 
-typedef struct {
-    uint16_t tr;      // Top right
-    uint16_t br;      // Bottom right
-    uint16_t tl;      // Top left
-    uint16_t bl;      // Bottom left
-    int temperature;  // Temperature
-} uni_balance_board_t;
+    typedef struct
+    {
+        uint16_t tr;     // Top right
+        uint16_t br;     // Bottom right
+        uint16_t tl;     // Top left
+        uint16_t bl;     // Bottom left
+        int temperature; // Temperature
+    } uni_balance_board_t;
 
-void uni_balance_board_dump(const uni_balance_board_t* bb);
+    void uni_balance_board_dump(const uni_balance_board_t *bb);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // UNI_BALANCE_BOARD_H
+#endif // UNI_BALANCE_BOARD_H

@@ -13,11 +13,13 @@ set(includes
 ./include/uni_platform_unijoysticle_c64.h
 ./include/uni_hid_parser_wii.h
 ./include/uni_bt_defines.h
+./include/uni_bt_allowlist.h
+./include/uni_bt_bredr.h
 ./include/uni_bt_conn.h
 ./include/uni_controller.h
 ./include/uni_platform_arduino_bootstrap.h
-./include/uni_bluetooth.h
-./include/uni_ble.h
+./include/uni_bt.h
+./include/uni_bt_le.h
 ./include/uni_platform_pc_debug.h
 ./include/uni_hid_parser_8bitdo.h
 ./include/uni_hid_parser_ds5.h
@@ -47,6 +49,8 @@ set(includes
 ./include/uni_hid_parser_android.h
 ./include/uni_hid_parser_nimbus.h
 ./include/uni_hid_parser_ouya.h
+./include/uni_hid_parser_psmove.h
+./include/uni_hid_parser_steam.h
 ./include/hid_usage.h
 ./include/uni_hid_parser_xboxone.h
 ./include/uni_platform.h
@@ -57,11 +61,15 @@ set(includes
 ./include/uni_hid_parser.h
 ./include/uni_hid_parser_smarttvremote.h
 ./include/sdkconfig.h
+./include/uni_virtual_device.h
+./include/uni_error.h
 )
 
 set(srcs "uni_balance_board.c"
-         "uni_ble.c"
-         "uni_bluetooth.c"
+         "uni_bt_le.c"
+         "uni_bt.c"
+         "uni_bt_allowlist.c"
+         "uni_bt_bredr.c"
          "uni_bt_conn.c"
          "uni_bt_sdp.c"
          "uni_bt_setup.c"
@@ -86,7 +94,9 @@ set(srcs "uni_balance_board.c"
          "uni_hid_parser_ouya.c"
          "uni_hid_parser_smarttvremote.c"
          "uni_hid_parser_switch.c"
+         "uni_hid_parser_steam.c"
          "uni_hid_parser_wii.c"
+         "uni_hid_parser_psmove.c"
          "uni_hid_parser_xboxone.c"
          "uni_joystick.c"
          "uni_log.c"
@@ -105,7 +115,8 @@ set(srcs "uni_balance_board.c"
          "uni_property.c"
          "uni_property_mem.c"
 #         "uni_property_nvs.c"
-"uni_utils.c"
+         "uni_utils.c"
+         "uni_virtual_device.c"
 # PICO
          "uni_platform_pico.c"
          )

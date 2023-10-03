@@ -50,7 +50,7 @@
 #include <btstack.h>
 #include <inttypes.h>
 
-#include "uni_bluetooth.h"
+#include "uni_bt.h"
 #include "uni_common.h"
 #include "uni_log.h"
 
@@ -181,7 +181,7 @@ static void handle_sdp_pid_query_result(uint8_t packet_type, uint16_t channel, u
                  uni_hid_device_get_product_id(sdp_device));
             uni_hid_device_guess_controller_type_from_pid_vid(sdp_device);
             uni_bt_conn_set_state(&sdp_device->conn, UNI_BT_CONN_STATE_SDP_VENDOR_FETCHED);
-            uni_bluetooth_process_fsm(sdp_device);
+            uni_bt_process_fsm(sdp_device);
             break;
         default:
             // TODO: xxx
@@ -234,7 +234,7 @@ void uni_bt_sdp_query_end(uni_hid_device_t* d) {
     uni_bt_conn_set_state(&d->conn, UNI_BT_CONN_STATE_SDP_HID_DESCRIPTOR_FETCHED);
     sdp_device = NULL;
     btstack_run_loop_remove_timer(&sdp_query_timer);
-    uni_bluetooth_process_fsm(d);
+    uni_bt_process_fsm(d);
 }
 
 void uni_bt_sdp_query_start_vid_pid(uni_hid_device_t* d) {

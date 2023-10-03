@@ -20,20 +20,21 @@ limitations under the License.
 #define UNI_BT_SDP_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "uni_hid_device.h"
 
-void uni_bt_sdp_query_start(uni_hid_device_t* d);
-void uni_bt_sdp_query_end(uni_hid_device_t* d);
-void uni_bt_sdp_query_start_vid_pid(uni_hid_device_t* d);
-void uni_bt_sdp_query_start_hid_descriptor(uni_hid_device_t* d);
+    void uni_bt_sdp_query_start(uni_hid_device_t *d);
+    void uni_bt_sdp_query_end(uni_hid_device_t *d);
+    void uni_bt_sdp_query_start_vid_pid(uni_hid_device_t *d);
+    void uni_bt_sdp_query_start_hid_descriptor(uni_hid_device_t *d);
 
-void uni_bt_sdp_server_init(void);
+    void uni_bt_sdp_server_init(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // UNI_BT_SDP_H
+#endif // UNI_BT_SDP_H

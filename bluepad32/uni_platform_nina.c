@@ -43,7 +43,7 @@ limitations under the License.
 #include <math.h>
 
 #include "sdkconfig.h"
-#include "uni_bluetooth.h"
+#include "uni_bt.h"
 #include "uni_common.h"
 #include "uni_config.h"
 #include "uni_esp32.h"
@@ -410,7 +410,7 @@ static int request_forget_bluetooth_keys(const uint8_t command[], uint8_t respon
     response[3] = 1;  // Param len
     response[4] = RESPONSE_OK;
 
-    uni_bluetooth_del_keys_safe();
+    uni_bt_del_keys_safe();
     return 5;
 }
 
@@ -450,7 +450,7 @@ static int request_get_gamepad_properties(const uint8_t command[], uint8_t respo
 // Command 0x07
 static int request_enable_bluetooth_connections(const uint8_t command[], uint8_t response[]) {
     bool enabled = command[4];
-    uni_bluetooth_enable_new_connections_safe(enabled);
+    uni_bt_enable_new_connections_safe(enabled);
 
     response[2] = 1;  // total params
     response[3] = 1;  // param len
@@ -965,7 +965,7 @@ static void process_pending_requests(void) {
                 // stack trace might depend on it. Instead call it from
                 // a callback.
                 idx = uni_hid_device_get_idx_for_instance(d);
-                uni_bluetooth_disconnect_device_safe(idx);
+                uni_bt_disconnect_device_safe(idx);
                 break;
 
             default:

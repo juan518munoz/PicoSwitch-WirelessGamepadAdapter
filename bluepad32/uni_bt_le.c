@@ -42,7 +42,7 @@
 
 /*
  * Execution order:
- *  uni_ble_on_gap_event_advertising_report()
+ *  uni_bt_le_on_gap_event_advertising_report()
  *      -> hog_connect()
  *  sm_packet_handler()
  *  device_information_packet_handler()
@@ -50,7 +50,7 @@
  *  uni_hid_device_set_ready()
  */
 
-#include "uni_ble.h"
+#include "uni_bt_le.h"
 
 #include <btstack.h>
 #include <btstack_config.h>
@@ -60,6 +60,7 @@
 #include <stdlib.h>
 
 #include "sdkconfig.h"
+#include "uni_bt_allowlist.h"
 #include "uni_bt_conn.h"
 #include "uni_bt_defines.h"
 #include "uni_common.h"
@@ -70,6 +71,7 @@
 #include "uni_property.h"
 
 static bool is_scanning;
+static bool ble_enabled;
 
 // Temporal space for SDP in BLE
 static uint8_t hid_descriptor_storage[500];
@@ -101,14 +103,23 @@ static void resume_scanning_hint(void)
 static void hog_disconnect(hci_con_handle_t con_handle)
 {
     // MUST not call uni_hid_device_disconnect(), called from it.
+    uint8_t status;
     uni_hid_device_t *device;
 
-    loge("**** hog_disconnect()\n");
+    device = uni_hid_device_get_instance_for_connection_handle(con_handle);
+    if (device)
+    {
+        status = hids_client_disconnect(device->hids_cid);
+        if (status != ERROR_CODE_SUCCESS)
+        {
+            loge("Failed to disconnect HIDS client for hids_cid=%d, status=%d\n", device->hids_cid, status);
+        }
+        // gap_delete_bonding(0, device->conn.btaddr);
+    }
+
     if (gap_get_connection_type(con_handle) != GAP_CONNECTION_INVALID)
         gap_disconnect(con_handle);
-    device = uni_hid_device_get_instance_for_connection_handle(con_handle);
 
-    hids_client_disconnect(device->hids_cid);
     resume_scanning_hint();
 }
 
@@ -177,9 +188,11 @@ static void get_advertisement_data(const uint8_t *adv_data, uint8_t adv_size, ui
         case BLUETOOTH_DATA_TYPE_DEVICE_ID:
             logi("device id: %#x\n", little_endian_read_16(data, 0));
             break;
+        case BLUETOOTH_DATA_TYPE_LE_BLUETOOTH_DEVICE_ADDRESS:
+            break;
         case BLUETOOTH_DATA_TYPE_SECURITY_MANAGER_OUT_OF_BAND_FLAGS:
         default:
-            printf("Advertising Data Type 0x%2x not handled yet", data_type);
+            printf("Advertising Data Type 0x%2x not handled yet\n", data_type);
             break;
         }
     }
@@ -384,10 +397,16 @@ static void device_information_packet_handler(uint8_t packet_type, uint16_t chan
                 break;
             }
 
-            // continue - query primary services
+            // Continue - query primary services.
             logi("Search for HID service.\n");
             status = hids_client_connect(con_handle, hids_client_packet_handler, HID_PROTOCOL_MODE_REPORT,
                                          &hids_cid);
+            if (status == ERROR_CODE_COMMAND_DISALLOWED)
+            {
+                // Means that a HIDS client connection is already present.
+                // We forgot to delete it.
+                // hids_client_disconnect(con_handle);
+            }
             if (status != ERROR_CODE_SUCCESS)
             {
                 logi("HID client connection failed, status 0x%02x\n", status);
@@ -396,6 +415,10 @@ static void device_information_packet_handler(uint8_t packet_type, uint16_t chan
             }
             logi("Using hids_cid=%d\n", hids_cid);
             device->hids_cid = hids_cid;
+
+            status = hids_client_enable_notifications(hids_cid);
+            if (status != ERROR_CODE_SUCCESS)
+                loge("Failed to enable client notifications for hics_cid=%d\n", hids_cid);
             break;
         default:
             logi("Device Information service client connection failed, err 0x%02x.\n", status);
@@ -561,6 +584,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
     uni_hid_device_t *device;
     uint8_t status;
     uint8_t type;
+    hci_con_handle_t con_handle;
 
     ARG_UNUSED(channel);
     ARG_UNUSED(size);
@@ -612,6 +636,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
              sm_event_reencryption_started_get_addr_type(packet), bd_addr_to_str(addr));
         break;
     case SM_EVENT_REENCRYPTION_COMPLETE:
+        con_handle = sm_event_reencryption_complete_get_handle(packet);
         switch (sm_event_reencryption_complete_get_status(packet))
         {
         case ERROR_CODE_SUCCESS:
@@ -619,9 +644,11 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             break;
         case ERROR_CODE_CONNECTION_TIMEOUT:
             logi("Re-encryption failed, timeout\n");
+            hog_disconnect(con_handle);
             break;
         case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
             logi("Re-encryption failed, disconnected\n");
+            hog_disconnect(con_handle);
             break;
         case ERROR_CODE_PIN_OR_KEY_MISSING:
             logi("Re-encryption failed, bonding information missing\n\n");
@@ -641,7 +668,9 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
         device = uni_hid_device_get_instance_for_address(addr);
         if (!device)
         {
-            loge("SM_EVENT_PAIRING_COMPLETE: Invalid device\n");
+            con_handle = sm_event_pairing_complete_get_handle(packet);
+            loge("SM_EVENT_PAIRING_COMPLETE: Invalid device for addr %s\n", bd_addr_to_str(addr));
+            hog_disconnect(con_handle);
             break;
         }
 
@@ -680,7 +709,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
     }
 }
 
-void uni_ble_on_hci_event_le_meta(const uint8_t *packet, uint16_t size)
+void uni_bt_le_on_hci_event_le_meta(const uint8_t *packet, uint16_t size)
 {
     uni_hid_device_t *device;
     hci_con_handle_t con_handle;
@@ -698,7 +727,7 @@ void uni_ble_on_hci_event_le_meta(const uint8_t *packet, uint16_t size)
         device = uni_hid_device_get_instance_for_address(event_addr);
         if (!device)
         {
-            loge("uni_ble_on_connection_complete: Device not found for addr: %s\n", bd_addr_to_str(event_addr));
+            loge("uni_bt_le_on_connection_complete: Device not found for addr: %s\n", bd_addr_to_str(event_addr));
             break;
         }
         con_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
@@ -725,7 +754,7 @@ void uni_ble_on_hci_event_le_meta(const uint8_t *packet, uint16_t size)
     }
 }
 
-void uni_ble_on_hci_event_encryption_change(const uint8_t *packet, uint16_t size)
+void uni_bt_le_on_hci_event_encryption_change(const uint8_t *packet, uint16_t size)
 {
     uni_hid_device_t *device;
     hci_con_handle_t con_handle;
@@ -742,7 +771,7 @@ void uni_ble_on_hci_event_encryption_change(const uint8_t *packet, uint16_t size
     device = uni_hid_device_get_instance_for_connection_handle(con_handle);
     if (!device)
     {
-        loge("uni_ble_on_encryption_change: Device not found for connection handle: 0x%04x\n", con_handle);
+        loge("uni_bt_le_on_encryption_change: Device not found for connection handle: 0x%04x\n", con_handle);
         return;
     }
     // This event is also triggered by Classic, and might crash the stack.
@@ -766,7 +795,7 @@ void uni_ble_on_hci_event_encryption_change(const uint8_t *packet, uint16_t size
     }
 }
 
-void uni_ble_on_gap_event_advertising_report(const uint8_t *packet, uint16_t size)
+void uni_bt_le_on_gap_event_advertising_report(const uint8_t *packet, uint16_t size)
 {
     bd_addr_t addr;
     bd_addr_type_t addr_type;
@@ -783,7 +812,10 @@ void uni_ble_on_gap_event_advertising_report(const uint8_t *packet, uint16_t siz
 
     if (appearance != UNI_BT_HID_APPEARANCE_GAMEPAD && appearance != UNI_BT_HID_APPEARANCE_JOYSTICK &&
         appearance != UNI_BT_HID_APPEARANCE_MOUSE)
+    {
+        // Don't log it. There too many devices advertising themselves.
         return;
+    }
 
     addr_type = gap_event_advertising_report_get_address_type(packet);
     if (uni_hid_device_get_instance_for_address(addr))
@@ -794,6 +826,13 @@ void uni_ble_on_gap_event_advertising_report(const uint8_t *packet, uint16_t siz
 
     logi("Found, connect to device with %s address %s ...\n", addr_type == 0 ? "public" : "random",
          bd_addr_to_str(addr));
+
+    // Allowlist is only valid for "public" addresses. Doesn't make sense with random ones.
+    if (addr_type == 0 && !uni_bt_allowlist_allow_addr(addr))
+    {
+        logi("Ignoring device, not in allow-list: %s\n", bd_addr_to_str(addr));
+        return;
+    }
 
     uni_hid_device_t *d = uni_hid_device_create(addr);
     if (!d)
@@ -828,12 +867,45 @@ void uni_ble_on_gap_event_advertising_report(const uint8_t *packet, uint16_t siz
     hog_connect(addr, addr_type);
 }
 
-void uni_ble_delete_bonded_keys(void)
+void uni_bt_le_on_hci_diconnection_complete(uint16_t channel, const uint8_t *packet, uint16_t size)
+{
+    ARG_UNUSED(channel);
+    ARG_UNUSED(packet);
+    ARG_UNUSED(size);
+
+    resume_scanning_hint();
+}
+
+void uni_bt_le_list_bonded_keys(void)
 {
     bd_addr_t entry_address;
     int i;
 
-    if (!uni_ble_is_enabled())
+    if (!ble_enabled)
+        return;
+
+    logi("Bluetooth LE keys:\n");
+
+    for (i = 0; i < le_device_db_max_count(); i++)
+    {
+        int entry_address_type = (int)BD_ADDR_TYPE_UNKNOWN;
+        le_device_db_info(i, &entry_address_type, entry_address, NULL);
+
+        // skip unused entries
+        if (entry_address_type == (int)BD_ADDR_TYPE_UNKNOWN)
+            continue;
+
+        logi("%s - type %u\n", bd_addr_to_str(entry_address), (int)entry_address_type);
+    }
+    logi(".\n");
+}
+
+void uni_bt_le_delete_bonded_keys(void)
+{
+    bd_addr_t entry_address;
+    int i;
+
+    if (!ble_enabled)
         return;
 
     logi("Deleting stored BLE link keys:\n");
@@ -853,7 +925,7 @@ void uni_ble_delete_bonded_keys(void)
     logi(".\n");
 }
 
-void uni_ble_setup(void)
+void uni_bt_le_setup(void)
 {
     // register for events from Security Manager
     sm_event_callback_registration.callback = &sm_packet_handler;
@@ -903,9 +975,9 @@ void uni_ble_setup(void)
     gap_set_scan_parameters(0 /* type: passive */, 48 /* interval */, 48 /* window */);
 }
 
-void uni_ble_scan_start(void)
+void uni_bt_le_scan_start(void)
 {
-    if (!uni_ble_is_enabled())
+    if (!ble_enabled)
         return;
 
     gap_start_scan();
@@ -913,9 +985,9 @@ void uni_ble_scan_start(void)
     is_scanning = true;
 }
 
-void uni_ble_scan_stop(void)
+void uni_bt_le_scan_stop(void)
 {
-    if (!uni_ble_is_enabled())
+    if (!ble_enabled)
         return;
 
     gap_stop_scan();
@@ -923,23 +995,28 @@ void uni_ble_scan_stop(void)
     is_scanning = false;
 }
 
-void uni_ble_disconnect(hci_con_handle_t conn_handle)
+void uni_bt_le_disconnect(uni_hid_device_t *d)
 {
-    hog_disconnect(conn_handle);
+    // if (gap_get_connection_type(conn->handle) == GAP_CONNECTION_INVALID)
+    //     return;
+    hog_disconnect(d->conn.handle);
 }
 
-void uni_ble_set_enabled(bool enabled)
+void uni_bt_le_set_enabled(bool enabled)
 {
     // Called from different Task. Don't call btstack functions.
     uni_property_value_t val;
 
     val.u8 = enabled;
-
     uni_property_set(UNI_PROPERTY_KEY_BLE_ENABLED, UNI_PROPERTY_TYPE_U8, val);
+
+    ble_enabled = enabled;
 }
 
-bool uni_ble_is_enabled()
+bool uni_bt_le_is_enabled()
 {
+    // Expensive call. Avoid calling it from this same file.
+    // Called from "uni_bt_setup"
     uni_property_value_t val;
     uni_property_value_t def;
 
@@ -949,5 +1026,8 @@ bool uni_ble_is_enabled()
     def.u8 = 0;
 #endif // CONFIG_BLUEPAD32_ENABLE_BLE_BY_DEFAULT
     val = uni_property_get(UNI_PROPERTY_KEY_BLE_ENABLED, UNI_PROPERTY_TYPE_U8, def);
-    return val.u8;
+
+    ble_enabled = val.u8;
+
+    return ble_enabled;
 }

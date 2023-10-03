@@ -51,15 +51,15 @@ limitations under the License.
 // clang-format on
 
 // Parameters used in different Bluetooth functions
-#define UNI_BT_L2CAP_CHANNEL_MTU 0xffff  // Max MTU. DualShock requires at least a 79-byte packet
+#define UNI_BT_L2CAP_CHANNEL_MTU 0xffff // Max MTU. DualShock requires at least a 79-byte packet
 
 // Delicate balance between inquiry + pause.
 // If the interval is too short, some devices won't get discovered (e.g: 8BitDo SN30 Pro in dinput/xinput modes)
 // If the interval is too big, some devices won't be able to re-connect (e.g: Wii Remotes)
 // These are the default values, but that be overriden from the console.
-#define UNI_BT_MAX_PERIODIC_LENGTH 5  // In 1.28s unit
-#define UNI_BT_MIN_PERIODIC_LENGTH 4  // In 1.28s  unit
-#define UNI_BT_INQUIRY_LENGTH 3       // In 1.28s unit
+#define UNI_BT_MAX_PERIODIC_LENGTH 5 // In 1.28s unit
+#define UNI_BT_MIN_PERIODIC_LENGTH 4 // In 1.28s  unit
+#define UNI_BT_INQUIRY_LENGTH 3      // In 1.28s unit
 
 // Taken from 7.1.19 Remote Name Request Command
 #define UNI_BT_CLOCK_OFFSET_VALID BIT(15)

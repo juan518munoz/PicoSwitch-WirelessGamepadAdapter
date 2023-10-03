@@ -16,37 +16,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ****************************************************************************/
 
-#ifndef UNI_BLE_H
-#define UNI_BLE_H
+#ifndef UNI_VIRTUAL_DEVICE_H
+#define UNI_VIRTUAL_DEVICE_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#include <inttypes.h>
 #include <stdbool.h>
 
-#include <btstack.h>
-#include <btstack_config.h>
-
-void uni_ble_on_hci_event_le_meta(const uint8_t* packet, uint16_t size);
-void uni_ble_on_hci_event_encryption_change(const uint8_t* packet, uint16_t size);
-void uni_ble_on_gap_event_advertising_report(const uint8_t* packet, uint16_t size);
-
-void uni_ble_scan_start(void);
-void uni_ble_scan_stop(void);
-
-// Called from uni_hid_device_disconnect()
-void uni_ble_disconnect(hci_con_handle_t conn_handle);
-
-void uni_ble_delete_bonded_keys(void);
-void uni_ble_setup(void);
-
-void uni_ble_set_enabled(bool enabled);
-bool uni_ble_is_enabled(void);
+    void uni_virtual_device_init(void);
+    void uni_virtual_device_set_enabled(bool enabled);
+    bool uni_virtual_device_is_enabled(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // UNI_BLE_H
+#endif // UNI_VIRTUAL_DEVICE_H

@@ -24,16 +24,16 @@ limitations under the License.
 #include "uni_platform_mightymiggy.h"
 #include "uni_platform_nina.h"
 #include "uni_platform_pc_debug.h"
-#include "uni_platform_pico.h"
 
 #ifdef CONFIG_BLUEPAD32_PLATFORM_UNIJOYSTICLE
 #include "uni_platform_unijoysticle.h"
 #endif
 
 // Platform "object"
-static struct uni_platform* _platform;
+static struct uni_platform *_platform;
 
-void uni_platform_init(int argc, const char** argv) {
+void uni_platform_init(int argc, const char **argv)
+{
     // Each vendor must create its own. These CONFIG_BLUEPAD32_PLATFORM_ defines
     // are defined in the Makefile and Kconfig files.
 
@@ -59,6 +59,7 @@ void uni_platform_init(int argc, const char** argv) {
     _platform->init(argc, argv);
 }
 
-struct uni_platform* uni_get_platform(void) {
+struct uni_platform *uni_get_platform(void)
+{
     return _platform;
 }
