@@ -16,7 +16,7 @@ void send_switch_hid_report(SwitchOutGeneralReport report)
         tud_remote_wakeup();
     }
 
-    for (int i = 0; i < report.connected; i++)
+    for (int i = 0; i < 4; i++) // BP32_MAX_GAMEPADS
     {
         if (tud_hid_n_ready(i))
         {
