@@ -33,6 +33,16 @@ void get_button_state(SwitchOutGeneralReport *rpt)
     async_context_release_lock(context);
 }
 
+void empty_gamepad_report(SwitchOutReport *gamepad)
+{
+    gamepad->buttons = 0;
+    gamepad->hat = SWITCH_HAT_NOTHING;
+    gamepad->lx = SWITCH_JOYSTICK_MID;
+    gamepad->ly = SWITCH_JOYSTICK_MID;
+    gamepad->rx = SWITCH_JOYSTICK_MID;
+    gamepad->ry = SWITCH_JOYSTICK_MID;
+}
+
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
 void onConnectedGamepad(GamepadPtr gp)
@@ -69,6 +79,7 @@ void onDisconnectedGamepad(GamepadPtr gp)
         {
             printf("CALLBACK: Gamepad is disconnected from index=%d\n", i);
             myGamepads[i] = nullptr;
+            empty_gamepad_report(&report.gamepad[i]);
             foundGamepad = true;
             break;
         }
@@ -203,6 +214,22 @@ void fill_report(GamepadPtr myGamepad, int index)
     }
 }
 
+bool led_on;
+uint32_t led_timer;
+void blink_task(uint8_t connected)
+{
+    if (led_on && connected > 0)
+        return;
+
+    uint32_t now = to_ms_since_boot(get_absolute_time());
+    if (now - led_timer < 200)
+        return; // not enough time passed
+
+    led_timer = now;
+    led_on = !led_on;
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_on);
+}
+
 static void work_timer_handler(btstack_timer_source_t *ts)
 {
     BP32.update();
@@ -218,6 +245,7 @@ static void work_timer_handler(btstack_timer_source_t *ts)
         }
     }
     report.connected = connected;
+    blink_task(connected);
 
     // set timer for next tick
     btstack_run_loop_set_timer(&work_timer, BTSTACK_WORK_TIMER_MS);
@@ -228,14 +256,7 @@ void init_report(void)
 {
     report.connected = 0;
     for (int i = 0; i < BP32_MAX_GAMEPADS; i++)
-    {
-        report.gamepad[i].buttons = 0;
-        report.gamepad[i].hat = SWITCH_HAT_NOTHING;
-        report.gamepad[i].lx = SWITCH_JOYSTICK_MID;
-        report.gamepad[i].ly = SWITCH_JOYSTICK_MID;
-        report.gamepad[i].rx = SWITCH_JOYSTICK_MID;
-        report.gamepad[i].ry = SWITCH_JOYSTICK_MID;
-    }
+        empty_gamepad_report(&report.gamepad[i]);
 }
 
 void init_bluepad(void)
@@ -252,6 +273,9 @@ void init_bluepad(void)
 
     // Set report to default values
     init_report();
+
+    led_on = false;
+    led_timer = to_ms_since_boot(get_absolute_time());
 
     // set timer for workload
     btstack_run_loop_set_timer_handler(&work_timer, work_timer_handler);
