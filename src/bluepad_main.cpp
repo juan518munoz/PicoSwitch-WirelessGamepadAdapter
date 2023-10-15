@@ -21,6 +21,9 @@
 #define AXIS_DEADZONE 0xa
 
 static btstack_timer_source_t work_timer;
+bool led_on;
+uint32_t led_timer;
+uint32_t last_conn;
 
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
 
@@ -60,6 +63,7 @@ void onConnectedGamepad(GamepadPtr gp)
                    properties.product_id);
             myGamepads[i] = gp;
             foundEmptySlot = true;
+            last_conn = to_ms_since_boot(get_absolute_time());
             break;
         }
     }
@@ -80,6 +84,7 @@ void onDisconnectedGamepad(GamepadPtr gp)
             printf("CALLBACK: Gamepad is disconnected from index=%d\n", i);
             myGamepads[i] = nullptr;
             empty_gamepad_report(&report.gamepad[i]);
+            last_conn = to_ms_since_boot(get_absolute_time());
             foundGamepad = true;
             break;
         }
@@ -214,14 +219,20 @@ void fill_report(GamepadPtr myGamepad, int index)
     }
 }
 
-bool led_on;
-uint32_t led_timer;
 void blink_task(uint8_t connected)
 {
     if (led_on && connected > 0)
         return;
 
     uint32_t now = to_ms_since_boot(get_absolute_time());
+    if (now - last_conn > 30 * 1000)
+    {
+        // no connection for 30 seconds, turn off led
+        led_on = false;
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_on);
+        return;
+    }
+
     if (now - led_timer < 200)
         return; // not enough time passed
 
@@ -276,6 +287,7 @@ void init_bluepad(void)
 
     led_on = false;
     led_timer = to_ms_since_boot(get_absolute_time());
+    last_conn = led_timer;
 
     // set timer for workload
     btstack_run_loop_set_timer_handler(&work_timer, work_timer_handler);
