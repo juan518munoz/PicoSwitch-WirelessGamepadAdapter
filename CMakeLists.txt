@@ -19,15 +19,8 @@ set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_executable(PicoSwitchWGA
-    src/main.cpp
-    src/bluepad_main.cpp
-    src/usb_descriptors.c
-    src/picoHandler/PicoBluepad32.cpp
-    src/picoHandler/PicoConsole.cpp
-    src/picoHandler/PicoController.cpp
-    src/picoHandler/PicoGamepad.cpp
-)
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c")
+add_executable(PicoSwitchWGA ${SOURCES})
 
 target_include_directories(PicoSwitchWGA PRIVATE src include bluepad32/include)
 target_link_libraries(PicoSwitchWGA 
