@@ -42,6 +42,7 @@ static struct
     {CONTROLLER_TYPE_XBoxOneController, "XBox One"},
     {CONTROLLER_TYPE_PS3Controller, "DualShock 3"},
     {CONTROLLER_TYPE_PS4Controller, "DualShock 4"},
+    {CONTROLLER_TYPE_PS5Controller, "DualShock 5"},
     {CONTROLLER_TYPE_WiiController, "Wii"},
     {CONTROLLER_TYPE_AppleController, "Apple"},
     {CONTROLLER_TYPE_AndroidController, "Android"},
