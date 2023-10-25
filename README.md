@@ -5,6 +5,10 @@ This project is possible thanks to [Bluepad32](https://github.com/ricardoquesada
 
 https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/62400508/e1148028-f1f3-4d5b-980a-72534b42acf7
 
+Multiple gamepads support (4 max)
+
+https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/62400508/247b4c35-10f9-402a-9c81-fd966c905dd6
+
 ## Installing
 1. Download latest `.uf2` file from [releases](https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/releases).
 2. Plug Pico on PC while holding the bootsel button.
