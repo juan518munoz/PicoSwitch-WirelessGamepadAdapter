@@ -19,7 +19,11 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 - Only gamepad tested as of now is Series X, no issues shown so far.
 
 ## Building
-1. Run `build.sh` to build the project, better instructions will be added later.
+1. Clone the repository with `git clone https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter`
+2. Enter the repo directory with `cd PicoSwitch-WirelessGamepadAdapter`
+3. Setup the Pico SDK download with `export PICO_SDK_FETCH_FROM_GIT=on`
+4. Run `./build.sh` (This may take a while)
+5. The `.uf2` file should be inside the newly created `build` directory at `./build/PicoSwitchWGA.uf2`. Follow the installation steps above
 
 ## Development roadmap
 - [x] Bluetooth connection.
