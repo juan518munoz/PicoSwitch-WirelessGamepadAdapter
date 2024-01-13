@@ -57,7 +57,14 @@
         "uni_hid_device_vendors.h": "c",
         "uni_platform.h": "c",
         "uni_config.h": "c",
-        "uni_platform_pico.h": "c"
+        "uni_platform_pico.h": "c",
+        "sdkconfig.h": "c",
+        "uni.h": "c",
+        "cyw43_arch.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c",
+        "switchdescriptors.h": "c",
+        "stdint.h": "c"
     },
     // These settings tweaks to the cmake plugin will ensure
     // that you debug using cortex-debug instead of trying to launch
