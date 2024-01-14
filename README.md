@@ -23,7 +23,7 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 ## Building
 1. Install Make, CMake (at least version 3.13), and GCC cross compiler
    ```bash
-   sudo apt-get make install gdb-arm-none-eabi build-essential
+   sudo apt-get install make cmake gdb-arm-none-eabi gcc-arm-none-eabi build-essential
    ```
 2. (Optional) Install [Pico SDK](https://github.com/raspberrypi/pico-sdk) and set `PICO_SDK_PATH` environment variable to the SDK path. Not using the SDK will download it automatically for each build.
 3. Update submodules
@@ -34,7 +34,7 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
    ```bash
    make build
    ```
-5. Flash
+5. Flash!
    ```bash
    make flash
    ```

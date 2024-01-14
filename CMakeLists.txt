@@ -48,6 +48,7 @@ target_link_libraries(PicoSwitchWGA
     bluepad32
     tinyusb_device
     tinyusb_board
+    pico_multicore
 )
 
 add_subdirectory(${BLUEPAD32_ROOT}/src/components/bluepad32 libbluepad32)

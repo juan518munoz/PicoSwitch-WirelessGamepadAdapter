@@ -6,6 +6,8 @@
 #include <string.h>
 
 #include <pico/cyw43_arch.h>
+#include <pico/multicore.h>
+#include <pico/async_context.h>
 #include <uni.h>
 
 #include "sdkconfig.h"
@@ -20,7 +22,9 @@
 
 // Declarations
 static void trigger_event_on_gamepad(uni_hid_device_t *d);
-SwitchOutGeneralReport report;
+SwitchOutReport report[CONFIG_BLUEPAD32_MAX_DEVICES];
+SwitchIdxOutReport idx_r;
+SwitchOutReportSerialized serialized;
 
 // Helper functions
 static void
@@ -54,6 +58,91 @@ convert_to_switch_axis(int32_t bluepadAxis)
 	return (uint8_t) bluepadAxis;
 }
 
+static void
+fill_gamepad_report(int idx, uni_gamepad_t *gp)
+{
+	empty_gamepad_report(&report[idx]);
+
+	// face buttons
+	if ((gp->buttons & BUTTON_A)) {
+		report[idx].buttons |= SWITCH_MASK_A;
+	}
+	if ((gp->buttons & BUTTON_B)) {
+		report[idx].buttons |= SWITCH_MASK_B;
+	}
+	if ((gp->buttons & BUTTON_X)) {
+		report[idx].buttons |= SWITCH_MASK_X;
+	}
+	if ((gp->buttons & BUTTON_Y)) {
+		report[idx].buttons |= SWITCH_MASK_Y;
+	}
+
+	// shoulder buttons
+	if ((gp->buttons & BUTTON_SHOULDER_L)) {
+		report[idx].buttons |= SWITCH_MASK_L;
+	}
+	if ((gp->buttons & BUTTON_SHOULDER_R)) {
+		report[idx].buttons |= SWITCH_MASK_R;
+	}
+
+	// dpad
+	switch (gp->dpad) {
+	case DPAD_UP:
+		report[idx].hat = SWITCH_HAT_UP;
+		break;
+	case DPAD_DOWN:
+		report[idx].hat = SWITCH_HAT_DOWN;
+		break;
+	case DPAD_LEFT:
+		report[idx].hat = SWITCH_HAT_LEFT;
+		break;
+	case DPAD_RIGHT:
+		report[idx].hat = SWITCH_HAT_RIGHT;
+		break;
+	case DPAD_UP | DPAD_RIGHT:
+		report[idx].hat = SWITCH_HAT_UPRIGHT;
+		break;
+	case DPAD_DOWN | DPAD_RIGHT:
+		report[idx].hat = SWITCH_HAT_DOWNRIGHT;
+		break;
+	case DPAD_DOWN | DPAD_LEFT:
+		report[idx].hat = SWITCH_HAT_DOWNLEFT;
+		break;
+	case DPAD_UP | DPAD_LEFT:
+		report[idx].hat = SWITCH_HAT_UPLEFT;
+		break;
+	default:
+		report[idx].hat = SWITCH_HAT_NOTHING;
+		break;
+	}
+
+	// sticks
+	report[idx].lx = convert_to_switch_axis(gp->axis_x);
+	report[idx].ly = convert_to_switch_axis(gp->axis_y);
+	report[idx].rx = convert_to_switch_axis(gp->axis_rx);
+	report[idx].ry = convert_to_switch_axis(gp->axis_ry);
+	if ((gp->buttons & BUTTON_THUMB_L))
+		report[idx].buttons |= SWITCH_MASK_L3;
+	if ((gp->buttons & BUTTON_THUMB_R))
+		report[idx].buttons |= SWITCH_MASK_R3;
+
+	// triggers
+	if (gp->brake)
+		report[idx].buttons |= SWITCH_MASK_ZL;
+	if (gp->throttle)
+		report[idx].buttons |= SWITCH_MASK_ZR;
+
+	// misc buttons
+	if (gp->misc_buttons & MISC_BUTTON_SYSTEM)
+		report[idx].buttons |= SWITCH_MASK_HOME;
+	if (gp->misc_buttons & MISC_BUTTON_CAPTURE)
+		report[idx].buttons |= SWITCH_MASK_CAPTURE;
+	if (gp->misc_buttons & MISC_BUTTON_BACK)
+		report[idx].buttons |= SWITCH_MASK_MINUS;
+	if (gp->misc_buttons & MISC_BUTTON_HOME)
+		report[idx].buttons |= SWITCH_MASK_PLUS;
+}
+
 //
 // Platform Overrides
 //
@@ -80,16 +169,10 @@ static void
 pico_switch_on_init_complete(void)
 {
 	logi("pico_switch: on_init_complete()\n");
-	init_usb();
-	while (!usb_ready()) {
-		sleep_ms(10);
-	}
 
-	report.connected = 0;
 	for (int i = 0; i < CONFIG_BLUEPAD32_MAX_DEVICES; i++) {
-		empty_gamepad_report(&report.gamepad[i]);
+		empty_gamepad_report(&report[i]);
 	}
-	send_switch_hid_report(report);
 
 	// Safe to call "unsafe" functions since they are called from BT thread
 
@@ -129,19 +212,12 @@ pico_switch_on_device_ready(uni_hid_device_t *d)
 	return UNI_ERROR_SUCCESS;
 }
 
-bool foo = false;
 static void
 pico_switch_on_controller_data(uni_hid_device_t *d, uni_controller_t *ctl)
 {
-	static uint8_t leds = 0;
-	static uint8_t enabled = true;
-	static uni_controller_t prev = { 0 };
 	uni_gamepad_t *gp;
+	uint8_t idx = uni_hid_device_get_idx_for_instance(d);
 
-	if (memcmp(&prev, ctl, sizeof(*ctl)) == 0) {
-		return;
-	}
-	prev = *ctl;
 	// Print device Id before dumping gamepad.
 	logi("(%p) ", d);
 	uni_controller_dump(ctl);
@@ -149,91 +225,17 @@ pico_switch_on_controller_data(uni_hid_device_t *d, uni_controller_t *ctl)
 	switch (ctl->klass) {
 	case UNI_CONTROLLER_CLASS_GAMEPAD:
 		gp = &ctl->gamepad;
-		foo = !foo;
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, foo);
+		fill_gamepad_report(idx, gp);
+		idx_r.idx = idx;
+		idx_r.report = report[idx];
 
-		empty_gamepad_report(&report.gamepad[0]);
-
-		// face buttons
-		if ((gp->buttons & BUTTON_A)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_A;
+		serialized = serialize_report(idx_r);
+		if (multicore_fifo_push_timeout_us(serialized.low, 10)) {
+			if (!multicore_fifo_push_timeout_us(serialized.high, 10)) {
+				// if we fail to send the second part, clear poisoned FIFO
+				multicore_fifo_drain();
+			}
 		}
-		if ((gp->buttons & BUTTON_B)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_B;
-		}
-		if ((gp->buttons & BUTTON_X)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_X;
-		}
-		if ((gp->buttons & BUTTON_Y)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_Y;
-		}
-
-		// shoulder buttons
-		if ((gp->buttons & BUTTON_SHOULDER_L)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_L;
-		}
-		if ((gp->buttons & BUTTON_SHOULDER_R)) {
-			report.gamepad[0].buttons |= SWITCH_MASK_R;
-		}
-
-		// dpad
-		switch (gp->dpad) {
-		case DPAD_UP:
-			report.gamepad[0].hat = SWITCH_HAT_UP;
-			break;
-		case DPAD_DOWN:
-			report.gamepad[0].hat = SWITCH_HAT_DOWN;
-			break;
-		case DPAD_LEFT:
-			report.gamepad[0].hat = SWITCH_HAT_LEFT;
-			break;
-		case DPAD_RIGHT:
-			report.gamepad[0].hat = SWITCH_HAT_RIGHT;
-			break;
-		case DPAD_UP | DPAD_RIGHT:
-			report.gamepad[0].hat = SWITCH_HAT_UPRIGHT;
-			break;
-		case DPAD_DOWN | DPAD_RIGHT:
-			report.gamepad[0].hat = SWITCH_HAT_DOWNRIGHT;
-			break;
-		case DPAD_DOWN | DPAD_LEFT:
-			report.gamepad[0].hat = SWITCH_HAT_DOWNLEFT;
-			break;
-		case DPAD_UP | DPAD_LEFT:
-			report.gamepad[0].hat = SWITCH_HAT_UPLEFT;
-			break;
-		default:
-			report.gamepad[0].hat = SWITCH_HAT_NOTHING;
-			break;
-		}
-
-		// sticks
-		report.gamepad[0].lx = convert_to_switch_axis(gp->axis_x);
-		report.gamepad[0].ly = convert_to_switch_axis(gp->axis_y);
-		report.gamepad[0].rx = convert_to_switch_axis(gp->axis_rx);
-		report.gamepad[0].ry = convert_to_switch_axis(gp->axis_ry);
-		if ((gp->buttons & BUTTON_THUMB_L))
-			report.gamepad[0].buttons |= SWITCH_MASK_L3;
-		if ((gp->buttons & BUTTON_THUMB_R))
-			report.gamepad[0].buttons |= SWITCH_MASK_R3;
-
-		// triggers
-		if (gp->brake)
-			report.gamepad[0].buttons |= SWITCH_MASK_ZL;
-		if (gp->throttle)
-			report.gamepad[0].buttons |= SWITCH_MASK_ZR;
-
-		// misc buttons
-		if (gp->misc_buttons & MISC_BUTTON_SYSTEM)
-			report.gamepad[0].buttons |= SWITCH_MASK_HOME;
-		if (gp->misc_buttons & MISC_BUTTON_CAPTURE)
-			report.gamepad[0].buttons |= SWITCH_MASK_CAPTURE;
-		if (gp->misc_buttons & MISC_BUTTON_BACK)
-			report.gamepad[0].buttons |= SWITCH_MASK_MINUS;
-		if (gp->misc_buttons & MISC_BUTTON_HOME)
-			report.gamepad[0].buttons |= SWITCH_MASK_PLUS;
-
-		send_switch_hid_report(report);
 		break;
 	case UNI_CONTROLLER_CLASS_BALANCE_BOARD:
 		// Do something
@@ -264,23 +266,23 @@ pico_switch_get_property(uni_property_idx_t idx)
 static void
 pico_switch_on_oob_event(uni_platform_oob_event_t event, void *data)
 {
-	switch (event) {
-	case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
-		// Optional: do something when "system" button gets pressed.
-		trigger_event_on_gamepad((uni_hid_device_t *) data);
-		break;
+	// switch (event) {
+	// case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
+	// 	// Optional: do something when "system" button gets pressed.
+	// 	trigger_event_on_gamepad((uni_hid_device_t *) data);
+	// 	break;
 
-	case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
-		// When the "bt scanning" is on / off. Could by triggered by
-		// different events Useful to notify the user
-		logi("pico_switch_on_oob_event: Bluetooth enabled: %d\n",
-		     (bool) (data));
-		break;
+	// case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
+	// 	// When the "bt scanning" is on / off. Could by triggered by
+	// 	// different events Useful to notify the user
+	// 	logi("pico_switch_on_oob_event: Bluetooth enabled: %d\n",
+	// 	     (bool) (data));
+	// 	break;
 
-	default:
-		logi("pico_switch_on_oob_event: unsupported event: 0x%04x\n",
-		     event);
-	}
+	// default:
+	// 	logi("pico_switch_on_oob_event: unsupported event: 0x%04x\n",
+	// 	     event);
+	// }
 }
 
 //
@@ -289,27 +291,27 @@ pico_switch_on_oob_event(uni_platform_oob_event_t event, void *data)
 static void
 trigger_event_on_gamepad(uni_hid_device_t *d)
 {
-	if (d->report_parser.set_rumble != NULL) {
-		d->report_parser.set_rumble(d, 0x80 /* value */, 15 /* duration */);
-	}
+	// if (d->report_parser.set_rumble != NULL) {
+	// 	d->report_parser.set_rumble(d, 0x80 /* value */, 15 /* duration */);
+	// }
 
-	if (d->report_parser.set_player_leds != NULL) {
-		static uint8_t led = 0;
-		led += 1;
-		led &= 0xf;
-		d->report_parser.set_player_leds(d, led);
-	}
+	// if (d->report_parser.set_player_leds != NULL) {
+	// 	static uint8_t led = 0;
+	// 	led += 1;
+	// 	led &= 0xf;
+	// 	d->report_parser.set_player_leds(d, led);
+	// }
 
-	if (d->report_parser.set_lightbar_color != NULL) {
-		static uint8_t red = 0x10;
-		static uint8_t green = 0x20;
-		static uint8_t blue = 0x40;
+	// if (d->report_parser.set_lightbar_color != NULL) {
+	// 	static uint8_t red = 0x10;
+	// 	static uint8_t green = 0x20;
+	// 	static uint8_t blue = 0x40;
 
-		red += 0x10;
-		green -= 0x20;
-		blue += 0x40;
-		d->report_parser.set_lightbar_color(d, red, green, blue);
-	}
+	// 	red += 0x10;
+	// 	green -= 0x20;
+	// 	blue += 0x40;
+	// 	d->report_parser.set_lightbar_color(d, red, green, blue);
+	// }
 }
 
 //

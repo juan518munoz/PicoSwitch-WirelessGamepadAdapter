@@ -5,14 +5,21 @@
 #include "SwitchDescriptors.h"
 #include <stdbool.h>
 
-typedef struct
-{
-    uint8_t connected;
-    SwitchOutReport gamepad[CONFIG_BLUEPAD32_MAX_DEVICES];
-} SwitchOutGeneralReport;
+// move to SwitchDescriptors.h ?
+typedef struct {
+    uint8_t idx;
+    SwitchOutReport report;
+} SwitchIdxOutReport;
 
-void init_usb();
-void send_switch_hid_report(SwitchOutGeneralReport report);
-bool usb_ready();
+// serialize report to two uint32_t
+typedef struct {
+    uint32_t low;
+    uint32_t high;
+} SwitchOutReportSerialized;
+
+void send_switch_hid_report(int idx, SwitchOutReport report);
+SwitchOutReportSerialized serialize_report(SwitchIdxOutReport idx_r);
+SwitchIdxOutReport deserialize_report(SwitchOutReportSerialized serialized);
+void usb_core_task();
 
 #endif
