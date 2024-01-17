@@ -30,3 +30,6 @@ flash_nuke:
 
 clean:
 	@rm -rf build
+
+debug:
+	sudo minicom -D /dev/ttyACM0	
