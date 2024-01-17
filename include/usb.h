@@ -3,7 +3,6 @@
 
 #include "sdkconfig.h"
 #include "SwitchDescriptors.h"
-#include <stdbool.h>
 
 // move to SwitchDescriptors.h ?
 typedef struct {

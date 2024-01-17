@@ -1,16 +1,19 @@
 // Example file - Public Domain
 // Need help? https://tinyurl.com/bluepad32-help
 
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <pico/cyw43_arch.h>
 #include <pico/multicore.h>
 #include <pico/async_context.h>
-#include <uni.h>
 
 #include "sdkconfig.h"
+#include "uni_bt.h"
+#include "uni_gamepad.h"
+#include "uni_hid_device.h"
+#include "uni_log.h"
+#include "uni_platform.h"
 #include "usb.h"
 
 // Sanity check
@@ -146,13 +149,12 @@ fill_gamepad_report(int idx, uni_gamepad_t *gp)
 //
 // Platform Overrides
 //
-static void
-pico_switch_init(int argc, const char **argv)
-{
-	ARG_UNUSED(argc);
-	ARG_UNUSED(argv);
 
-	logi("pico_switch: init()\n");
+static void my_platform_init(int argc, const char** argv) {
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    logi("my_platform: init()\n");
 
 	uni_gamepad_mappings_t mappings = GAMEPAD_DEFAULT_MAPPINGS;
 
@@ -165,55 +167,40 @@ pico_switch_init(int argc, const char **argv)
 	uni_gamepad_set_mappings(&mappings);
 }
 
-static void
-pico_switch_on_init_complete(void)
-{
-	logi("pico_switch: on_init_complete()\n");
+static void my_platform_on_init_complete(void) {
+    logi("my_platform: on_init_complete()\n");
 
-	for (int i = 0; i < CONFIG_BLUEPAD32_MAX_DEVICES; i++) {
-		empty_gamepad_report(&report[i]);
-	}
+    // Safe to call "unsafe" functions since they are called from BT thread
 
-	// Safe to call "unsafe" functions since they are called from BT thread
+    // Start scanning
+    uni_bt_enable_new_connections_unsafe(true);
 
-	// Start scanning
-	uni_bt_enable_new_connections_unsafe(true);
+    // Based on runtime condition you can delete or list the stored BT keys.
+    if (1)
+        uni_bt_del_keys_unsafe();
+    else
+        uni_bt_list_keys_unsafe();
 
-	// Based on runtime condition you can delete or list the stored BT keys.
-	if (1)
-		uni_bt_del_keys_unsafe();
-	else
-		uni_bt_list_keys_unsafe();
-
-	// Turn off LED once init is done.
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+    // Turn off LED once init is done.
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 }
 
-static void
-pico_switch_on_device_connected(uni_hid_device_t *d)
-{
-	logi("pico_switch: device connected: %p\n", d);
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+static void my_platform_on_device_connected(uni_hid_device_t* d) {
+    logi("my_platform: device connected: %p\n", d);
 }
 
-static void
-pico_switch_on_device_disconnected(uni_hid_device_t *d)
-{
-	logi("pico_switch: device disconnected: %p\n", d);
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+static void my_platform_on_device_disconnected(uni_hid_device_t* d) {
+    logi("my_platform: device disconnected: %p\n", d);
 }
 
-static uni_error_t
-pico_switch_on_device_ready(uni_hid_device_t *d)
-{
-	logi("pico_switch: device ready: %p\n", d);
+static uni_error_t my_platform_on_device_ready(uni_hid_device_t* d) {
+    logi("my_platform: device ready: %p\n", d);
 
-	// You can reject the connection by returning an error.
-	return UNI_ERROR_SUCCESS;
+    // You can reject the connection by returning an error.
+    return UNI_ERROR_SUCCESS;
 }
 
-static void
-pico_switch_on_controller_data(uni_hid_device_t *d, uni_controller_t *ctl)
+static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t* ctl)
 {
 	uni_gamepad_t *gp;
 	uint8_t idx = uni_hid_device_get_idx_for_instance(d);
@@ -255,82 +242,72 @@ pico_switch_on_controller_data(uni_hid_device_t *d, uni_controller_t *ctl)
 	}
 }
 
-static const uni_property_t *
-pico_switch_get_property(uni_property_idx_t idx)
-{
-	// Deprecated
-	ARG_UNUSED(idx);
-	return NULL;
+static int32_t my_platform_get_property(uni_platform_property_t key) {
+    // Deprecated
+    ARG_UNUSED(key);
+    return 0;
 }
 
-static void
-pico_switch_on_oob_event(uni_platform_oob_event_t event, void *data)
-{
-	// switch (event) {
-	// case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
-	// 	// Optional: do something when "system" button gets pressed.
-	// 	trigger_event_on_gamepad((uni_hid_device_t *) data);
-	// 	break;
+static void my_platform_on_oob_event(uni_platform_oob_event_t event, void* data) {
+    switch (event) {
+        case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
+            // Optional: do something when "system" button gets pressed.
+            trigger_event_on_gamepad((uni_hid_device_t*)data);
+            break;
 
-	// case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
-	// 	// When the "bt scanning" is on / off. Could by triggered by
-	// 	// different events Useful to notify the user
-	// 	logi("pico_switch_on_oob_event: Bluetooth enabled: %d\n",
-	// 	     (bool) (data));
-	// 	break;
+        case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
+            // When the "bt scanning" is on / off. Could by triggered by different events
+            // Useful to notify the user
+            logi("my_platform_on_oob_event: Bluetooth enabled: %d\n", (bool)(data));
+            break;
 
-	// default:
-	// 	logi("pico_switch_on_oob_event: unsupported event: 0x%04x\n",
-	// 	     event);
-	// }
+        default:
+            logi("my_platform_on_oob_event: unsupported event: 0x%04x\n", event);
+    }
 }
 
 //
 // Helpers
 //
-static void
-trigger_event_on_gamepad(uni_hid_device_t *d)
-{
-	// if (d->report_parser.set_rumble != NULL) {
-	// 	d->report_parser.set_rumble(d, 0x80 /* value */, 15 /* duration */);
-	// }
+static void trigger_event_on_gamepad(uni_hid_device_t* d) {
+    if (d->report_parser.set_rumble != NULL) {
+        d->report_parser.set_rumble(d, 0x80 /* value */, 15 /* duration */);
+    }
 
-	// if (d->report_parser.set_player_leds != NULL) {
-	// 	static uint8_t led = 0;
-	// 	led += 1;
-	// 	led &= 0xf;
-	// 	d->report_parser.set_player_leds(d, led);
-	// }
+    if (d->report_parser.set_player_leds != NULL) {
+        static uint8_t led = 0;
+        led += 1;
+        led &= 0xf;
+        d->report_parser.set_player_leds(d, led);
+    }
 
-	// if (d->report_parser.set_lightbar_color != NULL) {
-	// 	static uint8_t red = 0x10;
-	// 	static uint8_t green = 0x20;
-	// 	static uint8_t blue = 0x40;
+    if (d->report_parser.set_lightbar_color != NULL) {
+        static uint8_t red = 0x10;
+        static uint8_t green = 0x20;
+        static uint8_t blue = 0x40;
 
-	// 	red += 0x10;
-	// 	green -= 0x20;
-	// 	blue += 0x40;
-	// 	d->report_parser.set_lightbar_color(d, red, green, blue);
-	// }
+        red += 0x10;
+        green -= 0x20;
+        blue += 0x40;
+        d->report_parser.set_lightbar_color(d, red, green, blue);
+    }
 }
 
 //
 // Entry Point
 //
-struct uni_platform *
-get_my_platform(void)
-{
-	static struct uni_platform plat = {
-		.name = "Pico Switch",
-		.init = pico_switch_init,
-		.on_init_complete = pico_switch_on_init_complete,
-		.on_device_connected = pico_switch_on_device_connected,
-		.on_device_disconnected = pico_switch_on_device_disconnected,
-		.on_device_ready = pico_switch_on_device_ready,
-		.on_oob_event = pico_switch_on_oob_event,
-		.on_controller_data = pico_switch_on_controller_data,
-		.get_property = pico_switch_get_property,
-	};
+struct uni_platform* get_my_platform(void) {
+    static struct uni_platform plat = {
+        .name = "My Platform",
+        .init = my_platform_init,
+        .on_init_complete = my_platform_on_init_complete,
+        .on_device_connected = my_platform_on_device_connected,
+        .on_device_disconnected = my_platform_on_device_disconnected,
+        .on_device_ready = my_platform_on_device_ready,
+        .on_oob_event = my_platform_on_oob_event,
+        .on_controller_data = my_platform_on_controller_data,
+        .get_property = my_platform_get_property,
+    };
 
-	return &plat;
+    return &plat;
 }

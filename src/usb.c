@@ -3,23 +3,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
-#include "pico/multicore.h"
-#include "pico/async_context.h"
-
-void
-send_switch_hid_report(int idx, SwitchOutReport report)
-{
-	tud_task();
-	if (tud_suspended()) {
-		tud_remote_wakeup();
-	}
-
-	if (tud_hid_n_ready(idx)) {
-		tud_hid_n_report(idx, 0, &report, sizeof(report));
-	}
-}
+#include <pico/stdlib.h>
+#include <pico/cyw43_arch.h>
+#include <pico/multicore.h>
+#include <pico/async_context.h>
 
 SwitchOutReportSerialized
 serialize_report(SwitchIdxOutReport idx_r)
@@ -51,6 +38,8 @@ deserialize_report(SwitchOutReportSerialized serialized)
 	return idx_r;
 }
 
+// add a function to verify that a report is "valid"
+
 void
 usb_core_task()
 {
@@ -58,12 +47,15 @@ usb_core_task()
 
 	SwitchOutReportSerialized serialized;
 	SwitchIdxOutReport r;
+	r.idx = 0;
+	r.report.buttons = 0;
+	r.report.hat = 0;
+	r.report.lx = 0;
+	r.report.ly = 0;
+	r.report.rx = 0;
+	r.report.ry = 0;
 
-	bool led = false;
 	while (1) {
-		led = !led;
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led);
-
 		// low and high should have different magic numbers, in case we get a partial report
 		// we can detect it and clear the poisoned FIFO
 		serialized.low = multicore_fifo_pop_blocking();
@@ -79,5 +71,6 @@ usb_core_task()
 		if (tud_hid_n_ready(r.idx)) {
 			tud_hid_n_report(r.idx, 0, &r.report, sizeof(r.report));
 		}
+		sleep_ms(10);
 	}
 }
