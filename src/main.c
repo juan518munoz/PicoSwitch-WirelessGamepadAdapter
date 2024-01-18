@@ -6,11 +6,9 @@
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
 #include <pico/async_context.h>
+#include <uni.h>
 
 #include "sdkconfig.h"
-#include "uni_log.h"
-#include "uni_main.h"
-#include "uni_platform.h"
 #include "usb.h"
 
 // Sanity check
@@ -39,7 +37,7 @@ int main() {
     uni_platform_set_custom(get_my_platform());
 
     // Initialize BP32
-    uni_main(0, NULL);
+    uni_init(0, NULL);
 
     // Does not return.
     btstack_run_loop_execute();

@@ -9,7 +9,12 @@ endif()
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 
-set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+set(BLUEPAD32_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/bluepad32)
+
+# To use BTstack from Pico SDK do
+#set(BTSTACK_ROOT ${PICO_SDK_PATH}/lib/btstack)
+# To use it from Bluepad32 (up-to-date, with custom patches for controllers):
+set(BTSTACK_ROOT ${BLUEPAD32_ROOT}/external/btstack)
 
 project(PicoSwitchWGA C CXX ASM)
 set(CMAKE_C_STANDARD 11)

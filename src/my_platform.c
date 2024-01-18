@@ -7,13 +7,11 @@
 #include <pico/cyw43_arch.h>
 #include <pico/multicore.h>
 #include <pico/async_context.h>
+#include <uni.h>
 
 #include "sdkconfig.h"
-#include "uni_bt.h"
-#include "uni_gamepad.h"
 #include "uni_hid_device.h"
 #include "uni_log.h"
-#include "uni_platform.h"
 #include "usb.h"
 
 // Sanity check
@@ -242,10 +240,10 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 	}
 }
 
-static int32_t my_platform_get_property(uni_platform_property_t key) {
+static const uni_property_t* my_platform_get_property(uni_property_idx_t idx) {
     // Deprecated
-    ARG_UNUSED(key);
-    return 0;
+    ARG_UNUSED(idx);
+    return NULL;
 }
 
 static void my_platform_on_oob_event(uni_platform_oob_event_t event, void* data) {
