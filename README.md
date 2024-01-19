@@ -44,13 +44,15 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 - `clean` - Clean build directory.
 - `flash_nuke` - Flash the pico with `flash_nuke.uf2` which will erase the flash memory. This is useful when the pico is stuck in a boot loop.
 - `all` - `build` and `flash`.
-- `format` - Format the code using `clang-format`. This requires `clang-format` to be installed. 
+- `format` - Format the code using `clang-format`. This requires `clang-format` to be installed.
+- `debug` - Start _minicom_ to debug the pico. This requires `minicom` to be installed and uart debugging.
 
 ## Development roadmap
 - [x] Bluetooth connection.
 - [x] Basic button mapping.
 - [x] Complete button mapping.
 - [x] Support multiple gamepads at once (needs better testing).
+- [x] Update Bluepad32 to latest version.
 - [x] Update Bluepad32 to latest version.
 - [ ] Support other platforms.
 
