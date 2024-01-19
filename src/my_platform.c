@@ -13,6 +13,7 @@
 #include "uni_hid_device.h"
 #include "uni_log.h"
 #include "usb.h"
+#include "report.h"
 
 // Sanity check
 #ifndef CONFIG_BLUEPAD32_PLATFORM_CUSTOM
@@ -25,7 +26,6 @@
 static void trigger_event_on_gamepad(uni_hid_device_t *d);
 SwitchOutReport report[CONFIG_BLUEPAD32_MAX_DEVICES];
 SwitchIdxOutReport idx_r;
-SwitchOutReportSerialized serialized;
 
 // Helper functions
 static void
@@ -163,6 +163,16 @@ static void my_platform_init(int argc, const char** argv) {
 	mappings.button_x = UNI_GAMEPAD_MAPPINGS_BUTTON_Y;
 
 	uni_gamepad_set_mappings(&mappings);
+
+	idx_r.idx = 0;
+	idx_r.report.buttons = 0;
+	idx_r.report.hat = 0; // REPLACE WITH SWITCH_HAT_NOTHING
+	idx_r.report.lx = 0;
+	idx_r.report.ly = 0;
+	idx_r.report.rx = 0;
+	idx_r.report.ry = 0;
+	set_global_gamepad_report(&idx_r);
+
 }
 
 static void my_platform_on_init_complete(void) {
@@ -181,6 +191,9 @@ static void my_platform_on_init_complete(void) {
 
     // Turn off LED once init is done.
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+
+	logi("BLUEPAD: ready to fill reports");
+	multicore_fifo_push_blocking(0); // signal other core to start reading
 }
 
 static void my_platform_on_device_connected(uni_hid_device_t* d) {
@@ -204,8 +217,8 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 	uint8_t idx = uni_hid_device_get_idx_for_instance(d);
 
 	// Print device Id before dumping gamepad.
-	logi("(%p) ", d);
-	uni_controller_dump(ctl);
+	// logi("(%p) ", d);
+	// uni_controller_dump(ctl);
 
 	switch (ctl->klass) {
 	case UNI_CONTROLLER_CLASS_GAMEPAD:
@@ -213,14 +226,7 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 		fill_gamepad_report(idx, gp);
 		idx_r.idx = idx;
 		idx_r.report = report[idx];
-
-		serialized = serialize_report(idx_r);
-		if (multicore_fifo_push_timeout_us(serialized.low, 10)) {
-			if (!multicore_fifo_push_timeout_us(serialized.high, 10)) {
-				// if we fail to send the second part, clear poisoned FIFO
-				multicore_fifo_drain();
-			}
-		}
+		set_global_gamepad_report(&idx_r);
 		break;
 	case UNI_CONTROLLER_CLASS_BALANCE_BOARD:
 		// Do something

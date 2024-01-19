@@ -66,7 +66,10 @@
         "switchdescriptors.h": "c",
         "stdint.h": "c",
         "async_context.h": "c",
-        "multicore.h": "c"
+        "multicore.h": "c",
+        "report.h": "c",
+        "btstack_run_loop.h": "c",
+        "usb.h": "c"
     },
     // These settings tweaks to the cmake plugin will ensure
     // that you debug using cortex-debug instead of trying to launch
