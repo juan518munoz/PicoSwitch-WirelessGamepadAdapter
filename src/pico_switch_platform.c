@@ -200,7 +200,7 @@ static void pico_switch_platform_on_device_connected(uni_hid_device_t* d) {
 
 static void pico_switch_platform_on_device_disconnected(uni_hid_device_t* d) {
     logi("my_platform: device disconnected: %p\n", d);
-	// NOT WORKING
+	// NOT WORKING?
 	// This is complicated. uni_hid_device_get_idx_for_instance 
 	// no longer gives us the index once the device is disconnected.
 	// We assume in this case that a device disconnecting is in a state of no gameplay
