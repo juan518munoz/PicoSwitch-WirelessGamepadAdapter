@@ -46,6 +46,5 @@ usb_core_task()
 		if (tud_hid_n_ready(r.idx)) {
 			tud_hid_n_report(r.idx, 0, &r.report, sizeof(r.report));
 		}
-		sleep_ms(5);  // we need to sleep here to avoid starving bluepad core
 	}
 }
