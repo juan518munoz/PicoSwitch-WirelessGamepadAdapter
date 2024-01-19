@@ -200,6 +200,18 @@ static void pico_switch_platform_on_device_connected(uni_hid_device_t* d) {
 
 static void pico_switch_platform_on_device_disconnected(uni_hid_device_t* d) {
     logi("my_platform: device disconnected: %p\n", d);
+	// NOT WORKING
+	// This is complicated. uni_hid_device_get_idx_for_instance 
+	// no longer gives us the index once the device is disconnected.
+	// We assume in this case that a device disconnecting is in a state of no gameplay
+	// so we set momentarelly all gamepad reports to 0.
+	// If this disconnection happens during gameplay, the gamepad would be stuck in the last state.
+	for (int i = 0; i < CONFIG_BLUEPAD32_MAX_DEVICES; i++) {
+		empty_gamepad_report(&report[i]);
+		idx_r.idx = i;
+		idx_r.report = report[i];
+		set_global_gamepad_report(&idx_r);
+	}
 }
 
 static uni_error_t pico_switch_platform_on_device_ready(uni_hid_device_t* d) {
