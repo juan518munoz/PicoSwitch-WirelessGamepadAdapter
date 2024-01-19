@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${PICO_SDK_PATH}/**"
+                "${env:PICO_SDK_PATH}/**", // not getting picked up
+                "/home/juan518/Coding/pico-sdk/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

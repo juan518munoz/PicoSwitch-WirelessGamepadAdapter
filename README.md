@@ -1,6 +1,8 @@
 # PicoSwitch-WirelessGamepadAdapter
 Use any bluetooth gamepad on your Nintendo Switch with a Raspberry Pi Pico W.
 
+## ⚠️ latest commit lacks multiple gamepad support and is unstable, use latest release instead of compiling yourself ⚠️
+
 This project is possible thanks to [Bluepad32](https://github.com/ricardoquesada/bluepad32) and [TinyUSB](https://github.com/hathach/tinyusb).
 
 https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/62400508/e1148028-f1f3-4d5b-980a-72534b42acf7
@@ -19,25 +21,41 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 - Only gamepad tested as of now is Series X, no issues shown so far.
 
 ## Building
-1. Install ARM GCC compiler and build-essential
-   `sudo apt-get install gdb-arm-none-eabi build-essential`
-2. Clone the repository with `git clone https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter`
-3. Enter the repo directory with `cd PicoSwitch-WirelessGamepadAdapter`
-4. Setup the Pico SDK download with `export PICO_SDK_FETCH_FROM_GIT=on`
-5. Run `./build.sh` (This may take a while)
-6. The `.uf2` file should be inside the newly created `build` directory at `./build/PicoSwitchWGA.uf2`. Follow the installation steps above
+1. Install Make, CMake (at least version 3.13), and GCC cross compiler
+   ```bash
+   sudo apt-get install make cmake gdb-arm-none-eabi gcc-arm-none-eabi build-essential
+   ```
+2. (Optional) Install [Pico SDK](https://github.com/raspberrypi/pico-sdk) and set `PICO_SDK_PATH` environment variable to the SDK path. Not using the SDK will download it automatically for each build.
+3. Update submodules
+   ```bash
+   make update
+   ```
+4. Build
+   ```bash
+   make build
+   ```
+5. Flash!
+   ```bash
+   make flash
+   ```
+   This `make` command will only work on OSes where the mounted pico drive is located in `/media/${USER}/RPI-RP2`. If this is not the case, you can manually copy the `.uf2` file located inside the `build` directory to the pico drive.
+
+#### Other `make` commands:
+- `clean` - Clean build directory.
+- `flash_nuke` - Flash the pico with `flash_nuke.uf2` which will erase the flash memory. This is useful when the pico is stuck in a boot loop.
+- `all` - `build` and `flash`.
+- `format` - Format the code using `clang-format`. This requires `clang-format` to be installed. 
 
 ## Development roadmap
 - [x] Bluetooth connection.
 - [x] Basic button mapping.
 - [x] Complete button mapping.
 - [x] Support multiple gamepads at once (needs better testing).
-- [x] Update Bluepad32 to latest version (only partial update, parsers not updated).
+- [x] Update Bluepad32 to latest version.
 - [ ] Support other platforms.
 
 ## Acknowledgements
 - [ricardoquesada](https://github.com/ricardoquesada) - maker of [Bluepad32](https://github.com/ricardoquesada/bluepad32)
-- [lohengrin](https://github.com/lohengrin/) - port of [Bluepad32](https://github.com/lohengrin/Bluepad32_PicoW) to the Raspberry Pi Pico W.
 - [hathach](https://github.com/hathach) creator of [TinyUSB](https://github.com/hathach/tinyusb)
-- [splork](https://github.com/aveao/splork) and [retro-pico-switch](https://github.com/DavidPagels/retro-pico-switch) - for the hid descriptors and TinyUsb usage.
+- [splork](https://github.com/aveao/splork) and [retro-pico-switch](https://github.com/DavidPagels/retro-pico-switch) - for the hid descriptors and TinyUsb usage examples.
 
