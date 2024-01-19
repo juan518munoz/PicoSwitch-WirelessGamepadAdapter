@@ -27,7 +27,8 @@ usb_core_task()
 	r.report.ry = 0;
 
 	// send empty reports while bluepad32 is still not set
-	uint8_t runs = 50; // run for at least 5 seconds sending empty reports, garanteeing host will see the device
+	uint8_t runs =
+	        50;  // run for at least 5 seconds sending empty reports, garanteeing host will see the device
 	while (multicore_fifo_get_status() & 1 == 0 || runs > 0) {
 		if (tud_hid_n_ready(r.idx)) {
 			tud_hid_n_report(r.idx, 0, &r.report, sizeof(r.report));
