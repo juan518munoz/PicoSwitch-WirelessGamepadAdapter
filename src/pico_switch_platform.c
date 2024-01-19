@@ -1,6 +1,3 @@
-// Example file - Public Domain
-// Need help? https://tinyurl.com/bluepad32-help
-
 #include <stdio.h>
 #include <string.h>
 
@@ -14,6 +11,7 @@
 #include "uni_log.h"
 #include "usb.h"
 #include "report.h"
+#include "SwitchDescriptors.h"
 
 // Sanity check
 #ifndef CONFIG_BLUEPAD32_PLATFORM_CUSTOM
@@ -148,7 +146,7 @@ fill_gamepad_report(int idx, uni_gamepad_t *gp)
 // Platform Overrides
 //
 
-static void my_platform_init(int argc, const char** argv) {
+static void pico_switch_platform_init(int argc, const char** argv) {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -166,7 +164,7 @@ static void my_platform_init(int argc, const char** argv) {
 
 	idx_r.idx = 0;
 	idx_r.report.buttons = 0;
-	idx_r.report.hat = 0; // REPLACE WITH SWITCH_HAT_NOTHING
+	idx_r.report.hat = SWITCH_HAT_NOTHING;
 	idx_r.report.lx = 0;
 	idx_r.report.ly = 0;
 	idx_r.report.rx = 0;
@@ -175,7 +173,7 @@ static void my_platform_init(int argc, const char** argv) {
 
 }
 
-static void my_platform_on_init_complete(void) {
+static void pico_switch_platform_on_init_complete(void) {
     logi("my_platform: on_init_complete()\n");
 
     // Safe to call "unsafe" functions since they are called from BT thread
@@ -196,29 +194,25 @@ static void my_platform_on_init_complete(void) {
 	multicore_fifo_push_blocking(0); // signal other core to start reading
 }
 
-static void my_platform_on_device_connected(uni_hid_device_t* d) {
+static void pico_switch_platform_on_device_connected(uni_hid_device_t* d) {
     logi("my_platform: device connected: %p\n", d);
 }
 
-static void my_platform_on_device_disconnected(uni_hid_device_t* d) {
+static void pico_switch_platform_on_device_disconnected(uni_hid_device_t* d) {
     logi("my_platform: device disconnected: %p\n", d);
 }
 
-static uni_error_t my_platform_on_device_ready(uni_hid_device_t* d) {
+static uni_error_t pico_switch_platform_on_device_ready(uni_hid_device_t* d) {
     logi("my_platform: device ready: %p\n", d);
 
     // You can reject the connection by returning an error.
     return UNI_ERROR_SUCCESS;
 }
 
-static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t* ctl)
+static void pico_switch_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t* ctl)
 {
 	uni_gamepad_t *gp;
 	uint8_t idx = uni_hid_device_get_idx_for_instance(d);
-
-	// Print device Id before dumping gamepad.
-	// logi("(%p) ", d);
-	// uni_controller_dump(ctl);
 
 	switch (ctl->klass) {
 	case UNI_CONTROLLER_CLASS_GAMEPAD:
@@ -246,13 +240,13 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 	}
 }
 
-static const uni_property_t* my_platform_get_property(uni_property_idx_t idx) {
+static const uni_property_t* pico_switch_platform_get_property(uni_property_idx_t idx) {
     // Deprecated
     ARG_UNUSED(idx);
     return NULL;
 }
 
-static void my_platform_on_oob_event(uni_platform_oob_event_t event, void* data) {
+static void pico_switch_platform_on_oob_event(uni_platform_oob_event_t event, void* data) {
     switch (event) {
         case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
             // Optional: do something when "system" button gets pressed.
@@ -262,11 +256,11 @@ static void my_platform_on_oob_event(uni_platform_oob_event_t event, void* data)
         case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
             // When the "bt scanning" is on / off. Could by triggered by different events
             // Useful to notify the user
-            logi("my_platform_on_oob_event: Bluetooth enabled: %d\n", (bool)(data));
+            logi("pico_switch_platform_on_oob_event: Bluetooth enabled: %d\n", (bool)(data));
             break;
 
         default:
-            logi("my_platform_on_oob_event: unsupported event: 0x%04x\n", event);
+            logi("pico_switch_platform_on_oob_event: unsupported event: 0x%04x\n", event);
     }
 }
 
@@ -303,14 +297,14 @@ static void trigger_event_on_gamepad(uni_hid_device_t* d) {
 struct uni_platform* get_my_platform(void) {
     static struct uni_platform plat = {
         .name = "My Platform",
-        .init = my_platform_init,
-        .on_init_complete = my_platform_on_init_complete,
-        .on_device_connected = my_platform_on_device_connected,
-        .on_device_disconnected = my_platform_on_device_disconnected,
-        .on_device_ready = my_platform_on_device_ready,
-        .on_oob_event = my_platform_on_oob_event,
-        .on_controller_data = my_platform_on_controller_data,
-        .get_property = my_platform_get_property,
+        .init = pico_switch_platform_init,
+        .on_init_complete = pico_switch_platform_on_init_complete,
+        .on_device_connected = pico_switch_platform_on_device_connected,
+        .on_device_disconnected = pico_switch_platform_on_device_disconnected,
+        .on_device_ready = pico_switch_platform_on_device_ready,
+        .on_oob_event = pico_switch_platform_on_oob_event,
+        .on_controller_data = pico_switch_platform_on_controller_data,
+        .get_property = pico_switch_platform_get_property,
     };
 
     return &plat;

@@ -8,6 +8,7 @@
 #include <memory.h>
 
 #include "usb.h"
+#include "SwitchDescriptors.h"
 
 // used between threads
 SwitchIdxOutReport shared_report;
