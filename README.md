@@ -51,7 +51,6 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
 - [x] Complete button mapping.
 - [x] Support multiple gamepads at once (needs better testing).
 - [x] Update Bluepad32 to latest version.
-- [x] Update Bluepad32 to latest version.
 - [ ] Support other platforms.
 
 ## Acknowledgements
