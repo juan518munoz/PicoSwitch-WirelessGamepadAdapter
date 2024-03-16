@@ -1,0 +1,13 @@
+# Target labels
+ PioasmBuild
+# Source files and their labels
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/CMakeFiles/PioasmBuild
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/CMakeFiles/PioasmBuild.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/CMakeFiles/PioasmBuild-complete.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-build.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-configure.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-download.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-install.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-mkdir.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-patch.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pico-sdk/src/rp2_common/tinyusb/pioasm/src/PioasmBuild-stamp/PioasmBuild-update.rule

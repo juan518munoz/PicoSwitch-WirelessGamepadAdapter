@@ -1,4 +1,0 @@
-src/main.c
-src/pico_switch.c
-src/usb_descriptors.c
-src/usb.c

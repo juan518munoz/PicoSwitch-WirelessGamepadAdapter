@@ -1,0 +1,13 @@
+# Target labels
+ ELF2UF2Build
+# Source files and their labels
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/CMakeFiles/ELF2UF2Build
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/CMakeFiles/ELF2UF2Build.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/CMakeFiles/ELF2UF2Build-complete.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-build.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-configure.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-download.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-install.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-mkdir.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-patch.rule
+/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-update.rule
