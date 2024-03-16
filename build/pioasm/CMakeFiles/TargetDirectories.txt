@@ -1,3 +1,0 @@
-/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pioasm/CMakeFiles/pioasm.dir
-/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pioasm/CMakeFiles/edit_cache.dir
-/home/juan518/Coding/PicoSwitch-WirelessGamepadAdapter/build/pioasm/CMakeFiles/rebuild_cache.dir
