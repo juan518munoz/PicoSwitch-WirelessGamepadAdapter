@@ -16,7 +16,7 @@ https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/6240050
    ![image](https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/assets/62400508/9185e9d4-0b41-44cb-83b8-f706c67d144c)
 
 ## Known issues
-- Only gamepad tested as of now is Series X, no issues shown so far.
+⚠️ Latest version doesn't seem to work with DS5 controllers, use [LegacyPicoSwitchWGA.uf2](https://github.com/juan518munoz/PicoSwitch-WirelessGamepadAdapter/releases).
 
 ## Building
 1. Install Make, CMake (at least version 3.13), and GCC cross compiler
