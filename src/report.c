@@ -21,8 +21,8 @@ void set_global_gamepad_report(SwitchIdxOutReport *src) {
     async_context_t *context = cyw43_arch_async_context();
     async_context_acquire_lock_blocking(context);
     memcpy(&shared_report, src, sizeof(shared_report));
-    multicore_fifo_push_blocking(0);
     async_context_release_lock(context);
+    multicore_fifo_push_timeout_us(0, 1);
 }
 
 void get_global_gamepad_report(SwitchIdxOutReport *dest) {
