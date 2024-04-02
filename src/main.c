@@ -21,7 +21,7 @@ void bluepad_core_task()
 	// initialize CYW43 driver architecture (will enable BT if/because CYW43_ENABLE_BLUETOOTH == 1)
 	if (cyw43_arch_init()) {
 		loge("failed to initialise cyw43_arch\n");
-		return -1;
+		return;
 	}
 
 	// Turn-on LED. Turn it off once init is done.

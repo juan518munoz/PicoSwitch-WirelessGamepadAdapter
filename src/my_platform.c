@@ -231,8 +231,8 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 	uint8_t idx = uni_hid_device_get_idx_for_instance(d);
 
 	// Print device Id before dumping gamepad.
-	// logi("(%p) ", d);
-	// uni_controller_dump(ctl);
+	logi("(%p) ", d);
+	uni_controller_dump(ctl);
 
 	switch (ctl->klass) {
 	case UNI_CONTROLLER_CLASS_GAMEPAD:
