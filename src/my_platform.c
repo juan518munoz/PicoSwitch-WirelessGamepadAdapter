@@ -242,13 +242,6 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 		idx_r.report = report[idx];
 		set_global_gamepad_report(&idx_r);
 		break;
-	case UNI_CONTROLLER_CLASS_MOUSE: // DS5 is reported as mouse?
-		gp = &ctl->gamepad;
-		fill_gamepad_report(idx, gp);
-		idx_r.idx = idx;
-		idx_r.report = report[idx];
-		set_global_gamepad_report(&idx_r);
-		break;
 	default:
 		loge("Unsupported controller class: %d\n", ctl->klass);
 		break;
