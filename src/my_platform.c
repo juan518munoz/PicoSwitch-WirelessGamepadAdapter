@@ -242,6 +242,13 @@ static void my_platform_on_controller_data(uni_hid_device_t* d, uni_controller_t
 		idx_r.report = report[idx];
 		set_global_gamepad_report(&idx_r);
 		break;
+	case UNI_CONTROLLER_CLASS_MOUSE: // DS5 is reported as mouse?
+		gp = &ctl->gamepad;
+		fill_gamepad_report(idx, gp);
+		idx_r.idx = idx;
+		idx_r.report = report[idx];
+		set_global_gamepad_report(&idx_r);
+		break;
 	default:
 		loge("Unsupported controller class: %d\n", ctl->klass);
 		break;
@@ -258,7 +265,7 @@ static void my_platform_on_oob_event(uni_platform_oob_event_t event, void* data)
     switch (event) {
         case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
             // Optional: do something when "system" button gets pressed.
-            // trigger_event_on_gamepad((uni_hid_device_t*)data);
+            trigger_event_on_gamepad((uni_hid_device_t*)data);
             break;
 
         case UNI_PLATFORM_OOB_BLUETOOTH_ENABLED:
